@@ -154,7 +154,7 @@ We provided other layout and visual encoding functions (see [this gist](http://b
 
 Let's re-construct the GitHub Network Graph Visualizer using [simple_graph.html](simple_graph.html) as follows:
 
-1. Fetch commit data ([example](https://api.github.com/repos/caleydo/caleydo/commits), see [documentation](http://developer.github.com/v3/repos/commits/)) to use as input dataset to the graph. Use the repository of your choice.
+1. Use `d3.json` to fetch commit data ([example](https://api.github.com/repos/caleydo/caleydo/commits), see [documentation](http://developer.github.com/v3/repos/commits/)) to use as input dataset to the graph. Use the repository of your choice.
 
 2. Populate the provided graph data structure (`{nodes:[], links:[]}`) with commit data. Each node represents a commit with a unique id. Add all metadata of a commit its node. Note that some attributes are reserved keywords by the layout function (e.g. `x` and `y`) and you can't use them as variable names for metadata.
 
