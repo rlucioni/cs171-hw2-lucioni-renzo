@@ -1,5 +1,13 @@
 ![Homework 2](img/header.png)
 
+**Assignment completed by:** Renzo Lucioni
+
+**Email:** rlucioni@college.harvard.edu
+
+**HUID:** 90760092
+
+<hr>
+
 In this homework, we will dive deeper into using both Git and [GitHub](http://github.com/), the web-based service built on top of Git. We will be exploring graphs to better understand project activity and will iteratively produce node-link layouts of GitHub data.
 
 In a similar fashion to [Homework 1](https://github.com/CS171/HW1/) we won't start with building the actual visualization right away. Instead, we are going to build up some background knowledge, which will be useful for the final visualization.
