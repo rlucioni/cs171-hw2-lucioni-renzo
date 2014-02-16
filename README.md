@@ -211,7 +211,7 @@ Drawing on your observations from graphing different types of GitHub networks in
 Attach to this homework a picture/scan of your sketch, as well as a paragraph explaining the design decisions you made and how it addresses the limits of the GitHub Network Graph Visualizer you previously identified.
 
 ## Problem 4: Sketch Implementation
-*Answer the questions in a file [problem_4_answers.md](problem_4_answers.md).*
+*Answer the questions in a file [problem_4_answers.md](problem_4_answers.md) and provide your implementation in [problem_4.html](problem_4.html). You may include external Javascript or stylesheets.*
 
 You will now implement the sketch you've previously designed. Even though the sketching may have been as a group, you have to implement it yourself.
 
