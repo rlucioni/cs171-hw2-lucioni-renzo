@@ -129,7 +129,7 @@ We are now going to use the GitHub API to create a graph data structure of commi
 
 ### Graph Layouts and Visual Encoding
 
-We provided you with several *basic* graph visualization functions in the file [simple_graph.html](simple_graph.html). One of them is a basic force directed layout, generated from a graph constructed with random nodes and link connections. Such a layout is essentially a physics simulation, and node position is determined by iteratively trying to satisfy specified parameters (eg. gravity, friction, etc.). See [some examples](https://github.com/mbostock/d3/wiki/Force-Layout).
+We provided you with several *basic* graph visualization functions in the file [simple_graph.html](simple_graph.html). One of them is a basic force directed layout, generated from a graph constructed with random nodes and link connections. Such a layout is essentially a physics simulation, and node position is determined by iteratively trying to satisfy specified parameters (e.g., gravity, friction, etc.). See [some examples](https://github.com/mbostock/d3/wiki/Force-Layout).
 
 <table>
 <tr>
@@ -156,13 +156,13 @@ Let's re-construct the GitHub Network Graph Visualizer using [simple_graph.html]
 
 1. Use `d3.json` to fetch commit data ([example](https://api.github.com/repos/caleydo/caleydo/commits), see [documentation](http://developer.github.com/v3/repos/commits/)) to use as input dataset to the graph. Use the repository of your choice.
 
-2. Populate the provided graph data structure (`{nodes:[], links:[]}`) with commit data. Each node represents a commit with a unique id. Add all metadata of a commit its node. Note that some attributes are reserved keywords by the layout function (e.g. `x` and `y`) and you can't use them as variable names for metadata.
+2. Populate the provided graph data structure (`{nodes:[], links:[]}`) with commit data. Each node represents a commit with a unique id, each link points to the repositories previous version. Add all metadata of a commit to the node. Note that some attributes are keywords reserved for the layout function (e.g., `x` and `y`) and you can't use them as variable names for metadata.
 
-3. The GitHub Network Graph Visualizer layout is a combination of lines. Extend the current linear layout with two scales to display commits on the axis. The first scale should be index-based and use equal intervals between nodes. The second scale should use [time scales](https://github.com/mbostock/d3/wiki/Time-Scales), where the position reflects absolute time. Add a radio button to switch from one to another.
+3. The GitHub Network Graph Visualizer layout is a linear layout. Extend the provided D3 linear layout with two scales to display commits on the axis. The first scale should be index-based and use equal intervals between nodes. The second scale should use [time scales](https://github.com/mbostock/d3/wiki/Time-Scales), where the position reflects absolute time. Add a radio button and labels to switch from one to another.
 
 4. Add SVG markers to show the link direction ([example](http://bl.ocks.org/d3noob/5155181)) and add labels for branches.
 
-5. Color the nodes by branch, and when hovering over nodes, emphasize the current branch and show some details about the node itself (eg. a tooltip with the node characteristics).
+5. Color the nodes by branch, and when hovering over nodes, emphasize the current branch and show some details about the node itself (e.g., a tooltip with the node characteristics).
 
 6. As you may have noticed, links connecting commits are not straight lines in the GitHub network graph. Because SVG `<line>` elements are not a flexible way to draw curves, switch to using [`<path>`](http://www.w3.org/TR/SVG/paths.html) elements. You'll be able to add [control points](http://en.wikipedia.org/wiki/Control_point_(mathematics)) to shape the curve as you wish and choose the right [interpolation function](https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-line_interpolate). Here is an example of use of control points:
 
