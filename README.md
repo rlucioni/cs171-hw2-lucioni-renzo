@@ -160,7 +160,7 @@ Let's re-construct the GitHub Network Graph Visualizer using [simple_graph.html]
 
 2. Populate the provided graph data structure (`{nodes:[], links:[]}`) with commit data. Each node represents a commit with a unique id, each link points to the repositories previous version. Add all metadata of a commit to the node. Note that some attributes are keywords reserved for the layout function (e.g., `x` and `y`) and you can't use them as variable names for metadata.
 
-3. The GitHub Network Graph Visualizer layout is a linear layout. Extend the provided D3 linear layout with two scales to display commits on the axis. The first scale should be index-based and use equal intervals between nodes. The second scale should use [time scales](https://github.com/mbostock/d3/wiki/Time-Scales), where the position reflects absolute time. Add a radio button and labels to switch from one to another.
+3. The GitHub Network Graph Visualizer layout is a linear layout. Extend the provided linear layout with two scales to display commits on the axis. The first scale should be index-based and use equal intervals between nodes. The second scale should use [time scales](https://github.com/mbostock/d3/wiki/Time-Scales), where the position reflects absolute time. Add a radio button and labels to switch from one to another.
 
 4. Add SVG markers to show the link direction ([example](http://bl.ocks.org/d3noob/5155181)) and add labels for branches.
 
