@@ -14,7 +14,7 @@ We would like to hear what you found engaging and measure the difficulty — you
 
 ### Warm up questions
 
-* Refresh your GitHub skills by lookuing at [Lab 1](https://github.com/CS171/lab1/).
+* Refresh your GitHub skills by looking at [Lab 1](https://github.com/CS171/lab1/).
 * If you're not familiar, review [graph data structures](http://en.wikipedia.org/wiki/Graph_(abstract_data_type)) and its various [design variations](http://reference.wolfram.com/mathematica/guide/GraphsAndNetworks.html) as well as the lecture held on Feb. 14.
 * Read the D3 chapters from [Scott Muray's book](http://chimera.labs.oreilly.com/books/1230000000345/index.html).
 
