@@ -10,51 +10,51 @@
 
 In this homework, we will dive deeper into using both Git and [GitHub](http://github.com/), the web-based service built on top of Git. We will be exploring graphs to better understand project activity and will iteratively produce node-link layouts of GitHub data.
 
-In a similar fashion to [Homework 1](https://github.com/CS171/HW1/) we won't start with building the actual visualization right away. Instead, we are going to build up some background knowledge, which will be useful for the final visualization.
+Similar to [Homework 1](https://github.com/CS171/HW1/) we won't start with building the actual visualization right away. Instead, we are going to build up some background knowledge, which will be useful for the final visualization.
 
 ### Before Getting Started
 
-We recommend you start by reading the entirety of the homework. Problem 3 is a design problem and will be addressed during the design studio the week following the release of this homework. However, you can start sketching before and use those sketches for this homework, and of course for the design studio.
+*Design Studio* - We recommend you start by reading the entirety of the homework. Problem 3 is a design problem and will be addressed during the design studio the week following the release of this homework. However, you can start sketching before and use those sketches for this homework, and of course for the design studio.
 
-Please fill out the feedback [form](
+*Homework 1 Feedback* - Please fill out the feedback [form](
 https://docs.google.com/forms/d/1JEv80HLauBCspeWzsYOoBcgWsGACuuIgee7am7Sf588/viewform) for homework 1.
 We would like to hear what you found engaging and measure the difficulty — your feedback allows us to balance tasks better.
 
 ### Warm up questions
 
-* Refresh your GitHub skills with [CS171 lab1](https://github.com/CS171/lab1/) instructions.
-* If you're not familiar, review [graph data structures](http://en.wikipedia.org/wiki/Graph_(abstract_data_type)) and its various [design variations](http://reference.wolfram.com/mathematica/guide/GraphsAndNetworks.html).
+* Refresh your GitHub skills by looking at [Lab 1](https://github.com/CS171/lab1/).
+* If you're not familiar, review [graph data structures](http://en.wikipedia.org/wiki/Graph_(abstract_data_type)) and its various [design variations](http://reference.wolfram.com/mathematica/guide/GraphsAndNetworks.html) as well as the lecture held on Feb. 14.
 * Read the D3 chapters from [Scott Muray's book](http://chimera.labs.oreilly.com/books/1230000000345/index.html).
 
 ## Problem 1: Understanding GitHub Data 
 *Answer the questions in a file [problem_1_answers.md](problem_1_answers.md).*
 
-As you may already know, GitHub tracks two types of data: the underlying Git revision data, such as forks or commits, and GitHub-specific "social" data, such as users avatar, favorite projects, and following/followers, among others. 
+As you may already know, GitHub tracks two types of data: the underlying Git revision data, such as forks or commits, and GitHub-specific "social" data, such as users avatars, favorite projects, and following/followers, among others. 
 
 GitHub provides two ways to access both revision and social data:
 
-* The GitHub API with raw data, for programmers.
-* The GitHub website, with a selection of data and a graphical presentation for everyone.
+* The GitHub website, containing accessible information for use by humans. 
+* The GitHub API with raw data, for structured access by machines trhough programming languages.
 
 Note that not *all* social data are shared by GitHub, mostly for privacy reasons.
 
 ### GitHub API
 
-To access its raw data, GitHub provides a public API ([Application Programming Interface](http://en.wikipedia.org/wiki/Application_programming_interface)). An API is a common interface for web sites (or software frameworks and libraries) to allow and control limited access to its database. It is usually well-documented (see the [GitHub API](http://developer.github.com/v3/)) and it is possible to use the API to query the database directly in a browser, just by supplying the correct URL. Here is an example of using the GitHub API to [query the Django repository](https://api.github.com/repos/django/django).
+To access its raw data, GitHub provides a public [Application Programming Interface (API)](http://en.wikipedia.org/wiki/Application_programming_interface). An API is a common interface for web sites (or software frameworks and libraries) to allow and control limited access to its database. It is usually well-documented (see the [GitHub API](http://developer.github.com/v3/)) and it is possible to use the API to query the database directly in a browser, just by supplying the correct URL. Here is an example of using the GitHub API to [query the Django repository](https://api.github.com/repos/django/django).
 
 A program can query the API in two ways: 
 
-- By first downloading the data from the API, and then using it offline (online data changes won't be reflected in the downloaded data from that moment on). 
-- By calling the API every time the programs runs (the data will be up-to-date at each API call).
+* By first downloading the data from the API, and then using it offline (changes on the servers won't be reflected in the downloaded data from that moment on). 
+* By calling the API every time the programs runs (the data will be up-to-date at each API call).
 
 In both cases, you'll need to find the URL that corresponds to your query using the [GitHub API](http://developer.github.com/v3/).
 
-For instance, you can **download data** from GitHub by using the [curl](http://en.wikipedia.org/wiki/CURL) command line tool using the following syntax (see below). In case of a security error, use the `-k` parameter or use another way to download a file from the page (eg. use your browser).
+For instance, you can **download data** from GitHub by using the [curl](http://en.wikipedia.org/wiki/CURL) command line tool using the syntax shown below. In case of a security error, use the `-k` parameter or use another way to download a file from the page (e.g., use your browser).
 
 ```
 curl https://api.github.com/repos/django/django -o repos_django.json
 ```
-Your expected output is the following file (partial). To understand JSON formatting, read the [JSON documentation](http://www.json.org/).
+Your should see output similar to the following (partial) example. The output given is in JSON, a common and convenient file format that works well with D3. To understand JSON formatting, read the [JSON documentation](http://www.json.org/).
 
 ```json
 {
@@ -78,14 +78,14 @@ As an alternative to downloading data, you can **load the URL from the GitHub AP
     })
 ```
 
-The same output format as above is expected.
+This should produce the same output as shown above.
 
 **Warning**: GitHub enforces a [request limit](http://developer.github.com/v3/#rate-limiting) of 60 unauthenticated requests per hour. If you are consistently hitting that limit, you can raise it to 5000 by [authenticating](http://developer.github.com/v3/oauth/). The rate limit should not pose a problem, but it is your responsibility to ensure you don't get locked out hours before the assignment is due.
 
 
 ### Website
 
-Start by picking a GitHub repository you know. The best would be to a relatively small one you have made contributions to (eg., [Caleydo](https://github.com/Caleydo)) – preferably *not* a large, popular repository (we'll be looking at those in Problem 3). You can even use your HW1 repository, though you'll need to [authenticate](http://developer.github.com/v3/#authentication) your API calls.
+Start by picking a GitHub repository you know. You should pick a medium-sized repository, maybe one you have made contributions to. You can take a look at the [Caleydo](https://github.com/Caleydo) repository as an example. You should *not* pick a large, popular repository (we'll be looking at those in Problem 3). You can even use your HW1 repository, though you'll need to [authenticate](http://developer.github.com/v3/#authentication) your API calls.
 
 The GitHub website provides a user-friendly way to look at the data. On GitHub, each user has a profile page ([example](https://github.com/alexsb)). Carefully explore this page and its interactive features. As you may have noticed, the page features a central calendar map showing the user's activity. Below is a capture of such a visualization:
 
@@ -137,7 +137,7 @@ We are now going to use the GitHub API to create a graph data structure of commi
 
 ### Graph Layouts and Visual Encoding
 
-We provided you with several *basic* graph visualization functions in the file [simple_graph.html](simple_graph.html). One of them is a basic force directed layout, generated from a graph constructed with random nodes and link connections. Such a layout is essentially a physics simulation, and node position is determined by iteratively trying to satisfy specified parameters (eg. gravity, friction, etc.). See [some examples](https://github.com/mbostock/d3/wiki/Force-Layout).
+We provided you with several *basic* graph visualization functions in the file [simple_graph.html](simple_graph.html). One of them is a basic force directed layout, generated from a graph constructed with random nodes and link connections. Such a layout is essentially a physics simulation, and node position is determined by iteratively trying to satisfy specified parameters (e.g., gravity, friction, etc.). See [some examples](https://github.com/mbostock/d3/wiki/Force-Layout).
 
 <table>
 <tr>
@@ -162,15 +162,17 @@ We provided other layout and visual encoding functions (see [this gist](http://b
 
 Let's re-construct the GitHub Network Graph Visualizer using [simple_graph.html](simple_graph.html) as follows:
 
-1. Use `d3.json` to fetch commit data ([example](https://api.github.com/repos/caleydo/caleydo/commits), see [documentation](http://developer.github.com/v3/repos/commits/)) to use as input dataset to the graph. Use the repository of your choice.
+0. Choose any repository, as long as it meets the following  three conditions: (1) it contains commits from at least two users and has at least two branches, (2) it contains at least 30 commits from different users and branches, and (3) it is public. Because querying the API may result in partial data (e.g., not all commits are visible) it is perfectly fine if there are missing nodes and connections. In general, the diversity of the commits is more important than the quantity. For this problem you may only use a subset of all the commits, between 30 and 100 commits (but you can select more if you want).
 
-2. Populate the provided graph data structure (`{nodes:[], links:[]}`) with commit data. Each node represents a commit with a unique id. Add all metadata of a commit its node. Note that some attributes are reserved keywords by the layout function (e.g. `x` and `y`) and you can't use them as variable names for metadata.
+1. Use `d3.json` to fetch commit data ([example](https://api.github.com/repos/caleydo/caleydo/commits), see [documentation](http://developer.github.com/v3/repos/commits/)) to use as input dataset to the graph. You can [find all the branches](https://api.github.com/repos/mbostock/d3/branches) of a repository, or you can directly [query the commits by branch](https://api.github.com/repos/mbostock/d3/commits?per_page=100&sha=adopt) using the URL, as demonstrated in the linked examples. If you experience delays or calls limits download the commits and use them as an offline json file. You may have to call the API serveral times, so you will have to make sure that you create the visualization only when all the data has been retrieved. [Here is a discussion on how to do that](https://groups.google.com/forum/#!msg/d3-js/3Y9VHkOOdCM/YnmOPopWUxQJ). For problem 2 you do not need to incude forks, but you may use them if you want to.
 
-3. The GitHub Network Graph Visualizer layout is a combination of lines. Extend the current linear layout with two scales to display commits on the axis. The first scale should be index-based and use equal intervals between nodes. The second scale should use [time scales](https://github.com/mbostock/d3/wiki/Time-Scales), where the position reflects absolute time. Add a radio button to switch from one to another.
+2. Populate the provided graph data structure (`{nodes:[], links:[]}`) with commit data. Each node represents a commit with a unique id, each link points to the `parents` which is an attribute of the commit. Note there may not be parents or there can be multiple (e.g., if the commit is a merge of multiple branches). Add all metadata of a commit to the node. Be careful: some attributes are keywords reserved for the layout function (e.g., `x` and `y`) and you can't use them as variable names for metadata.
+
+3. The GitHub Network Graph Visualizer layout is a linear layout. Extend the provided linear layout with two scales to display commits on the axis. The first scale should be index-based and use equal intervals between nodes. The second scale should use [time scales](https://github.com/mbostock/d3/wiki/Time-Scales), where the position reflects absolute time. Add a radio button and labels to switch from one to another.
 
 4. Add SVG markers to show the link direction ([example](http://bl.ocks.org/d3noob/5155181)) and add labels for branches.
 
-5. Color the nodes by branch, and when hovering over nodes, emphasize the current branch and show some details about the node itself (eg. a tooltip with the node characteristics).
+5. Color the nodes by branch, and when hovering over nodes, emphasize the current branch and show some details about the node itself (e.g., a tooltip with the node characteristics).
 
 6. As you may have noticed, links connecting commits are not straight lines in the GitHub network graph. Because SVG `<line>` elements are not a flexible way to draw curves, switch to using [`<path>`](http://www.w3.org/TR/SVG/paths.html) elements. You'll be able to add [control points](http://en.wikipedia.org/wiki/Control_point_(mathematics)) to shape the curve as you wish and choose the right [interpolation function](https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-line_interpolate). Here is an example of use of control points:
 
