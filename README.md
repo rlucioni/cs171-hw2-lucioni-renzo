@@ -216,7 +216,7 @@ Given your previous design critiques, your experience with the previous graph vi
 
 ### Sketch an alternative to the GitHub Network Graph Visualizer
 
-Drawing on your observations from graphing different types of GitHub networks in the previous part, and from the reading, sketch an alternate design for the Github Network graph. It should use the same data and support at least the same tasks. You are free to use any layout.
+Drawing on your observations from graphing different types of GitHub networks in the previous part, and from the reading, sketch an alternate design for the Github Network graph. Your work should rely on the same source data (i.e. commit history), but be creative — the focus of your visualization is up to you. You are, for example, welcome to aggregate nodes or use additional Github data.
 
 Attach to this homework a picture/scan of your sketch, as well as a paragraph explaining the design decisions you made and how it addresses the limits of the GitHub Network Graph Visualizer you previously identified.
 
