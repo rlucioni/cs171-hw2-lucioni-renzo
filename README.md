@@ -26,7 +26,7 @@ As you may already know, GitHub tracks two types of data: the underlying Git rev
 GitHub provides two ways to access both revision and social data:
 
 * The GitHub website, containing accessible information for use by humans. 
-* The GitHub API with raw data, for structured access by machines trhough programming languages.
+* The GitHub API with raw data, for structured access by machines through programming languages.
 
 Note that not *all* social data are shared by GitHub, mostly for privacy reasons.
 
@@ -83,7 +83,7 @@ The GitHub website provides a user-friendly way to look at the data. On GitHub, 
 
 <img src="img/user_dashboard.png" width="600" style="display: block; margin-left:auto; margin-right:auto;"/>
 
-Open a Github profile and use your browser's developer tools to locate the `div` with the id of `contributions-calendar`. Its first child div has a `data-url` attribute, which points to the raw data used by the visualization. It is a univariate time series and below is a sample of the data:
+Open a Github profile and use your browser's developer tools to locate the `div` with the `id` of `contributions-calendar`. Its first child `div` has a `data-url` attribute, which points to the raw data used by the visualization. It is a univariate time series and below is a sample of the data:
 
 > [["2013/02/03",0],["2013/02/04",0],["2013/02/05",0],["2013/02/06",0],["2013/02/07",0],["2013/02/08",0],["2013/02/09",0],["2013/02/10",0]
  
@@ -120,7 +120,7 @@ Here is a screen capture of the Network Graph Visualizer:
 Looking at the network graph, answer the same questions as above, plus:
 
 * What is the role of interaction for this visualization? Would a static graph have been sufficient?
-* What happens if many new developers suddenly join the project and push commits for the first time? How would you to preserve the graph's readability in such a situation?
+* What happens if many new developers suddenly join the project and push commits for the first time? How would you preserve the graph's readability in such a situation?
 
 ## Problem 2: Graph Visualization
 *Use the file [simple_graph.html](simple_graph.html) as a template for your code. Your resulting code after completing the problems should be put in a new file called simple_graph_answer.html*
