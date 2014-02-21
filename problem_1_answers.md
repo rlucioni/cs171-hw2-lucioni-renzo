@@ -2,7 +2,7 @@
 
 We're asked to address the issue of many new commits being pushed in a short time interval (i.e., "bursted") for each of the repository statistics visualizations that GitHub provides. However, my answer is consistent across all of GitHub's visualization types, so I'll answer it once, here.
 
-Even though the visualizations GitHub provides are updated over time, they should not be updated immediately, especially when many commits are pushed in a short time interval. Having the visualization change quickly and suddenly would confuse users, and computing repository statistics is likely an expensive operation. My solution to this issue would be to only use cached data when building the visualizations. That is, I would only compute fresh repository statistics once every hour, and save this data for repeated use without needing to query the API again. Doing this would ensure consistent visualizations, prevent jarring changes, and avoid the need to frequently recompute repository statistics.
+Even though the visualizations GitHub provides are updated over time, they should not be updated immediately, especially when many commits are pushed in a short time interval. Having the visualization undergo frequent and sudden changes would confuse users, and computing repository statistics is likely an expensive operation. My solution to the issue of bursted commits would be to only use cached data when building my visualizations. That is, I would only query for fresh repository statistics once every hour, and save this data for repeated use without needing to query the API again. Doing this would ensure consistent visualizations, prevent jarring changes, and avoid the need to frequently recompute repository statistics.
 
 
 ### Contributors ###
@@ -81,11 +81,20 @@ Next, for the repositories found above, we would query the GitHub API for all co
 
 #### Audience ####
 
-The GitHub Network Graph is most likely intended for contributors who are interested in finding a specific branch to develop, or who want to understand the lay of the land with respect to a project's branches and forks.
+The GitHub network graph is most likely intended for contributors who are interested in keeping track of what other contributors have done or finding a specific branch to develop on.
 
 #### Data ####
 
+This visualization uses commit data from all branches in the current repository. The data used to construct the D3 repository's network graph can be accessed by first querying the GitHub API for all branches in the repository, performed as follows: `https://api.github.com/repos/mbostock/d3/branches`. Next, we query the GitHub API for the commits from each of the branch names returned by the previous API call. We do this as follows: `https://api.github.com/repos/mbostock/d3/commits?sha=<branch name>`.
+
+Due to the way Git works, commits returned using this method are paginated based on SHA instead of page number; that is, the SHA is used as the page number. To access the next page of results, we can use the links returned in the request headers, as described [here](http://developer.github.com/guides/traversing-with-pagination/). We can achieve the same result by iterating along each branch, starting from the branch's latest SHA (e.g., `https://api.github.com/repos/mbostock/d3/commits?sha=<branch name>`) and moving backwards in the branch's history by using the SHA of the last commit returned by the previous API call as the argument to the `last_sha` field in the subsequent API call (e.g., `https://api.github.com/repos/mbostock/d3/commits?last_sha=<SHA of last commit>`). We continue in this manner until the SHA of the last commit returned matches the current API call's `last_sha` value.
+
 #### Role of Interaction ####
 
-#### Many New Developers ####
+Interaction plays a limited role in GitHub's network graph. Hovering over a node in the graph will reveal a tooltip listing the corresponding commit's author, SHA, and commit message. Clicking a node will take you to the corresponding commit in a new window. Clicking and dragging allows you to translate the graph left, right, up, and down. Typing `t` toggles the tags containing the branch names.
 
+While interaction plays a limited role in the network graph, the ability to hover over a node to summon an informative tooltip is critical to making this visualization useful. As such, I do not think that a static, non-interactive graph would have been sufficient. Using a static graph would have required hiding or showing all commit information at once; the former would result in a useless graph, and the latter would result in a cluttered and hard-to-read graph.
+
+#### Many New Contributors ####
+
+Many new contributors pushing commits for the first time means many new branches in a project's network graph. I would preserve the readbility of the graph in this situation by spacing out the graph's branches to make room for the new branches, preventing the graph from becoming too dense. As it stands, GitHub's network graph achieves this by expanding the graph vertically, growing downwards by giving each new contributor their own row in the graph.
