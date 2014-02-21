@@ -77,7 +77,7 @@ This should produce the same output as shown above.
 
 ### Website
 
-Start by picking a GitHub repository you know. You should pick a medium-sized repository, maybe one you have made contributions to. You can take a look at the [Caleydo](https://github.com/Caleydo) repository as an example. You should *not* pick a large, popular repository (we'll be looking at those in Problem 3). You can even use your HW1 repository, though you'll need to [authenticate](http://developer.github.com/v3/#authentication) your API calls.
+Start by picking a GitHub repository you know. You should pick a medium-sized public repository, maybe one you have made contributions to. You can take a look at the [Caleydo](https://github.com/Caleydo) repository as an example. You should *not* pick a large, popular repository (we'll be looking at those in Problem 3).
 
 The GitHub website provides a user-friendly way to look at the data. On GitHub, each user has a profile page ([example](https://github.com/alexsb)). Carefully explore this page and its interactive features. As you may have noticed, the page features a central calendar map showing the user's activity. Below is a capture of such a visualization:
 
