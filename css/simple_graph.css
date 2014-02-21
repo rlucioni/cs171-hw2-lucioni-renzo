@@ -1,0 +1,12 @@
+.link {
+    stroke: gray;
+    stroke-width: 1.5px;
+}
+.node {
+    fill: #66CC66;
+    stroke: #000;
+    stroke-width: 1px;
+}
+.node:hover {
+    fill: red;
+}
