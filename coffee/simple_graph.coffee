@@ -66,9 +66,7 @@ for branch in branches
 #         commitsUrl = "#{fork.url}/commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
 #         contributors[fork.owner.login][branch.name] = getData(commitsUrl)
 
-# console.log contributors
-
-canvasWidth = 900
+canvasWidth = 1000
 canvasHeight = 700
 
 svg = d3.select("body").append("svg")
@@ -76,35 +74,20 @@ svg = d3.select("body").append("svg")
     .attr("height", canvasHeight)
 
 allBranchNames = []
-# for name, branches in contributors
 for name, branches of contributors
     for branchName of branches
         if branchName not in allBranchNames
             allBranchNames.push(branchName)
 
-# Use 10 colors from ColorBrewer Set3
 fill = d3.scale.ordinal()
-    .domain(d3.range(10))
+    .domain(allBranchNames)
     .range(colorbrewer.Set3[12])
 
-# fill = d3.scale.ordinal()
-#     .domain(allBranchNames)
-#     .range(colorbrewer.Set3[12])
+yScale = d3.scale.ordinal()
+    .domain(allBranchNames)
+    .rangeRoundBands([0, canvasHeight], 20)
 
 graph = {nodes: [], links: []}
-
-# numNodes = 100
-numCats = 10
-
-# graph.nodes = d3.range(numNodes)
-#     .map(() -> {cat: Math.floor(numCats*Math.random())})
-
-# graph.nodes.map((d, i) ->
-#     graph.nodes.map((e, j) ->
-#         if Math.random() > 0.99 and i != j
-#             graph.links.push({source: i, target: j})
-#     )
-# )
 
 # Populate the node array; nodes are encoded with their parents' SHAs
 for name, branches of contributors
@@ -139,69 +122,20 @@ forceLayout = () ->
         .links(graph.links)
         .start()
 
-randomLayout = () ->
-    force.stop()
-
-    graph.nodes.forEach((d, i) -> 
-        d.x = canvasWidth/4 + 2*canvasWidth*Math.random()/4
-        d.y = canvasHeight/4 + 2*canvasHeight*Math.random()/4
-    )
-
-    graphUpdate(500)
-
-lineLayout = () ->
+branchLayout = () ->
     force.stop()
 
     graph.nodes.forEach((d, i) ->
-        d.y = canvasHeight/2
+        d.y = yScale(d.branch)
     )
 
     graphUpdate(500)
 
-lineCatLayout = () ->
-    force.stop()
-
-    graph.nodes.forEach((d, i) ->
-        d.y = canvasHeight/2 + d.cat*20
-    )
-
-    graphUpdate(500)
-
-radialLayout = () ->
-    force.stop()
-
-    r = canvasHeight/2
-
-    arc = d3.svg.arc().outerRadius(r)
-
-    pie = d3.layout.pie()
-        .sort((a, b) -> a.cat - b.cat)
-        # equal share for each point
-        .value((d, i) -> 1)
-
-    graph.nodes = pie(graph.nodes).map((d, i) -> 
-        d.innerRadius = 0
-        d.outerRadius = r
-        d.data.x = arc.centroid(d)[0] + canvasHeight/2
-        d.data.y = arc.centroid(d)[1] + canvasWidth/2
-        d.data.endAngle = d.endAngle 
-        d.data.startAngle = d.startAngle 
-        return d.data
-    )
-
-    graphUpdate(500)
-
-categoryColor = () ->
+branchColor = () ->
     d3.selectAll("circle")
         .transition()
         .duration(500)
-        .style("fill", (d) -> fill(d.cat))
-
-categorySize = () ->
-    d3.selectAll("circle")
-        .transition()
-        .duration(500)
-        .attr("r", (d) -> Math.sqrt((d.cat + 1) * 10))
+        .style("fill", (d) -> fill(d.branch))
 
 graphUpdate = (delay) ->
     link.transition().duration(delay)
@@ -222,23 +156,14 @@ force = d3.layout.force()
     .on("start", (d) -> )
     .on("end", (d) -> )
 
-d3.select("input[value='force']").on("click", forceLayout)
-d3.select("input[value='random']").on("click", randomLayout)
-d3.select("input[value='line']").on("click", lineLayout)
-d3.select("input[value='line_cat']").on("click", lineCatLayout)
-d3.select("input[value='radial']").on("click", radialLayout)
+d3.select("input[value='forceLayout']").on("click", forceLayout)
+d3.select("input[value='branchLayout']").on("click", branchLayout)
 
-d3.select("input[value='nocolor']").on("click", () ->
+d3.select("input[value='noColor']").on("click", () ->
     d3.selectAll("circle").transition().duration(500).style("fill", "#66CC66")
 )
 
-d3.select("input[value='color_cat']").on("click", categoryColor)
-
-d3.select("input[value='nosize']").on("click", () ->
-    d3.selectAll("circle").transition().duration(500).attr("r", 5)
-)
-
-d3.select("input[value='size_cat']").on("click", categorySize)
+d3.select("input[value='branchColor']").on("click", branchColor)
 
 link = svg.selectAll(".link")
     .data(graph.links)
