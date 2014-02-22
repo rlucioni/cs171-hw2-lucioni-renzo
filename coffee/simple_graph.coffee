@@ -1,30 +1,3 @@
-canvasWidth = 900
-canvasHeight = 700
-
-svg = d3.select("body").append("svg")
-    .attr("width", canvasWidth)
-    .attr("height", canvasHeight)
-
-# Use 10 colors from ColorBrewer Set3
-fill = d3.scale.ordinal()
-    .domain(d3.range(10))
-    .range(colorbrewer.Set3[10])
-
-graph = {nodes: [], links: []}
-
-numNodes = 100
-numCats = 10
-
-graph.nodes = d3.range(numNodes)
-    .map(() -> {cat: Math.floor(numCats*Math.random())})
-
-graph.nodes.map((d, i) ->
-    graph.nodes.map((e, j) ->
-        if Math.random() > 0.99 and i != j
-            graph.links.push({source: i, target: j})
-    )
-)
-
 parseLinkHeader = (header) ->
     # Deals with absent link headers
     if header is null
@@ -80,23 +53,91 @@ for branch in branches
     contributors[rootUser][branch.name] = getData(commitsUrl)
 
 # Get forks
-forksUrl = "#{rootUrl}forks?access_token=#{accessToken}"
-forks = getData(forksUrl)
+# forksUrl = "#{rootUrl}forks?access_token=#{accessToken}"
+# forks = getData(forksUrl)
 
-for fork in forks
-    contributors[fork.owner.login] = {}
+# for fork in forks
+#     contributors[fork.owner.login] = {}
 
-    branchesUrl = "#{fork.url}/branches?access_token=#{accessToken}"
-    branches = getData(branchesUrl)
+#     branchesUrl = "#{fork.url}/branches?access_token=#{accessToken}"
+#     branches = getData(branchesUrl)
 
-    for branch in branches
-        commitsUrl = "#{fork.url}/commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
-        contributors[fork.owner.login][branch.name] = getData(commitsUrl)
+#     for branch in branches
+#         commitsUrl = "#{fork.url}/commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
+#         contributors[fork.owner.login][branch.name] = getData(commitsUrl)
 
-console.log contributors
+# console.log contributors
+
+canvasWidth = 900
+canvasHeight = 700
+
+svg = d3.select("body").append("svg")
+    .attr("width", canvasWidth)
+    .attr("height", canvasHeight)
+
+allBranchNames = []
+# for name, branches in contributors
+for name, branches of contributors
+    for branchName of branches
+        if branchName not in allBranchNames
+            allBranchNames.push(branchName)
+
+# Use 10 colors from ColorBrewer Set3
+fill = d3.scale.ordinal()
+    .domain(d3.range(10))
+    .range(colorbrewer.Set3[12])
+
+# fill = d3.scale.ordinal()
+#     .domain(allBranchNames)
+#     .range(colorbrewer.Set3[12])
+
+graph = {nodes: [], links: []}
+
+# numNodes = 100
+numCats = 10
+
+# graph.nodes = d3.range(numNodes)
+#     .map(() -> {cat: Math.floor(numCats*Math.random())})
+
+# graph.nodes.map((d, i) ->
+#     graph.nodes.map((e, j) ->
+#         if Math.random() > 0.99 and i != j
+#             graph.links.push({source: i, target: j})
+#     )
+# )
+
+# Populate the node array; nodes are encoded with their parents' SHAs
+for name, branches of contributors
+    for branch, commits of branches
+        for commit in commits
+            metadata =
+                author: commit.commit.author.name
+                message: commit.commit.message
+                branch: branch
+                sha: commit.sha
+                htmlUrl: commit.html_url
+                parentShas: (metadata.sha for parent, metadata of commit.parents)
+            
+            graph.nodes.push(metadata)
+
+# Process nodes to populate link array
+for i in d3.range(graph.nodes.length)
+    focusNode = graph.nodes[i]
+    for sha in focusNode.parentShas
+        for j in d3.range(graph.nodes.length)
+            candidateNode = graph.nodes[j]
+            if sha == candidateNode.sha and focusNode.sha != candidateNode.sha
+                graph.links.push({source: j, target: i})
+
+console.log("nodes: #{graph.nodes.length}, links: #{graph.links.length}")
 
 tick = (d) ->
     graphUpdate(0)
+
+forceLayout = () ->
+    force.nodes(graph.nodes)
+        .links(graph.links)
+        .start()
 
 randomLayout = () ->
     force.stop()
@@ -107,11 +148,6 @@ randomLayout = () ->
     )
 
     graphUpdate(500)
-
-forceLayout = () ->
-    force.nodes(graph.nodes)
-        .links(graph.links)
-        .start()
 
 lineLayout = () ->
     force.stop()
@@ -180,7 +216,7 @@ graphUpdate = (delay) ->
 # Generate the force layout
 force = d3.layout.force()
     .size([canvasWidth, canvasHeight])
-    .charge(-50)
+    .charge(-30)
     .linkDistance(10)
     .on("tick", tick)
     .on("start", (d) -> )
