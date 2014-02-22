@@ -26,48 +26,74 @@ graph.nodes.map((d, i) ->
 )
 
 parseLinkHeader = (header) ->
-    if header.length == 0
-        throw new Error("Link header must be of non-zero length.")
+    # Deals with absent link headers
+    if header is null
+        return {}
+
     values = header.split(',')
     links = {}
-    
-    parse = (value) ->
+
+    for value in values
         segments = value.split(';')
         url = segments[0].replace(/<(.*)>/, '$1').trim()
         rel = segments[1].replace(/rel="(.*)"/, '$1').trim()
         links[rel] = url
 
-    parse(value) for value in values
-
     return links
 
 getData = (url) ->
     request = new XMLHttpRequest()
-    # async false means send() will not return until response received (synchronous)
+    # Setting async to false means send() will not return until response received (synchronous)
     request.open('GET', url, false)
     request.send()
+
+    if request.status is 200
+        data = JSON.parse(request.responseText)
+    else
+        throw new Error("#{request.status} #{request.statusText}")
 
     linkHeader = request.getResponseHeader("Link")
     links = parseLinkHeader(linkHeader)
 
-    if request.status == 200
-        data = JSON.parse(request.responseText)
-
-    console.log(data.length)
-
-    # continue consuming "next" page until there are none left
+    # Continue consuming "next" page until there are none left
     if "next" of links
-        # dat recursion doe
+        # Dat recursion
         data = data.concat(getData(links["next"]))
 
     return data
 
-# using a public access (scopeless) token for Basic Authentication
+# Using a public access (scopeless) token for Basic Authentication
 accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511"
-commitsUrl = "https://api.github.com/repos/jsocol/django-waffle/commits?per_page=100&access_token=#{accessToken}"
-data = getData(commitsUrl)
+# Django Waffle is a Django feature flipper
+rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
+rootUser = "jsocol"
 
-console.log(data.length)
+# Will contain commit data, organized by contributor -> branch -> commits; includes forks
+contributors = {}
+
+contributors[rootUser] = {}
+branchesUrl = "#{rootUrl}branches?access_token=#{accessToken}"
+branches = getData(branchesUrl)
+
+for branch in branches
+    commitsUrl = "#{rootUrl}commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
+    contributors[rootUser][branch.name] = getData(commitsUrl)
+
+# Get forks
+forksUrl = "#{rootUrl}forks?access_token=#{accessToken}"
+forks = getData(forksUrl)
+
+for fork in forks
+    contributors[fork.owner.login] = {}
+
+    branchesUrl = "#{fork.url}/branches?access_token=#{accessToken}"
+    branches = getData(branchesUrl)
+
+    for branch in branches
+        commitsUrl = "#{fork.url}/commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
+        contributors[fork.owner.login][branch.name] = getData(commitsUrl)
+
+console.log contributors
 
 tick = (d) ->
     graphUpdate(0)
