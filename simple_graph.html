@@ -8,6 +8,9 @@
     <!-- My custom CSS -->
     <link rel="stylesheet" type="text/css" href="css/simple_graph.css">
 
+    <!-- Google Web Fonts (Lato) -->
+    <link rel='stylesheet' type='text/css' href='http://fonts.googleapis.com/css?family=Lato:300,400,700'>
+
     <!-- D3 -->
     <script src="http://d3js.org/d3.v3.min.js"></script>
     
@@ -17,16 +20,10 @@
 </head>
 <body>
 
-    <form>
-        Layout:
-            <label><input type="radio" name="layout" value="forceLayout" checked>Force</label>  
-            <label><input type="radio" name="layout" value="branchLayout">Branch</label>
-    </form>
-    <form>
-        Color:
-            <label><input type="radio" name="color" value="noColor" checked>None</label>
-            <label><input type="radio" name="color" value="branchColor">By Branch</label>
-    </form>
+    <div id="buttons">
+        <label><input type="radio" name="layout" value="linearLayout" checked>Linear Layout</label>
+        <label><input type="radio" name="layout" value="forceLayout">Force Layout</label>
+    </div>
 
     <!-- 
     NOTE: I'm using CoffeeScript (http://coffeescript.org/), a cleaner and       

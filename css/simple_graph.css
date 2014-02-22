@@ -1,12 +1,25 @@
+body {
+    font-family: 'Lato', sans-serif;
+}
+#buttons {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    padding-top: 20px;
+}
+input[type="radio"] {
+    margin: 0 10px 0 10px;
+}
+svg {
+    display: block;
+    margin: 0 auto;
+}
 .link {
     stroke: gray;
     stroke-width: 1.5px;
+    stroke-opacity: 0.4;
 }
 .node {
-    fill: #66CC66;
-    stroke: #000;
-    stroke-width: 1px;
-}
-.node:hover {
-    fill: red;
+    stroke: gray;
+    stroke-width: 0.5px;
 }

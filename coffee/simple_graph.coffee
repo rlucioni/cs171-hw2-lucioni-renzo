@@ -35,13 +35,13 @@ getData = (url) ->
 
     return data
 
-# Using a public access (scopeless) token for Basic Authentication
+# Scope-less public access token for Basic Authentication
 accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511"
 # Django Waffle is a Django feature flipper
 rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
 rootUser = "jsocol"
 
-# Will contain commit data, organized by contributor -> branch -> commits; includes forks
+# Contains commit data, organized by contributor -> branch -> commits; may include forks
 contributors = {}
 
 contributors[rootUser] = {}
@@ -66,12 +66,23 @@ for branch in branches
 #         commitsUrl = "#{fork.url}/commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
 #         contributors[fork.owner.login][branch.name] = getData(commitsUrl)
 
-canvasWidth = 1000
-canvasHeight = 700
+console.log contributors
+
+# Mike Bostock's margin convention
+margin = 
+    top:    10, 
+    bottom: 10, 
+    left:   10, 
+    right:  10
+
+canvasWidth = 1000 - margin.left - margin.right
+canvasHeight = 700 - margin.top - margin.bottom
 
 svg = d3.select("body").append("svg")
-    .attr("width", canvasWidth)
-    .attr("height", canvasHeight)
+    .attr("width", canvasWidth + margin.left + margin.right)
+    .attr("height", canvasHeight + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(#{margin.left}, #{margin.top})")
 
 allBranchNames = []
 for name, branches of contributors
@@ -79,22 +90,24 @@ for name, branches of contributors
         if branchName not in allBranchNames
             allBranchNames.push(branchName)
 
-fill = d3.scale.ordinal()
+colors = d3.scale.ordinal()
     .domain(allBranchNames)
     .range(colorbrewer.Set3[12])
 
 yScale = d3.scale.ordinal()
     .domain(allBranchNames)
-    .rangeRoundBands([0, canvasHeight], 20)
+    .rangeRoundBands([0, canvasHeight], 0.5)
 
 graph = {nodes: [], links: []}
 
-# Populate the node array; nodes are encoded with their parents' SHAs
+# Populate node array; nodes are encoded with their parents' SHAs
 for name, branches of contributors
     for branch, commits of branches
         for commit in commits
             metadata =
                 author: commit.commit.author.name
+                # ISO 8601 timestamp
+                date: commit.commit.author.date
                 message: commit.commit.message
                 branch: branch
                 sha: commit.sha
@@ -114,6 +127,10 @@ for i in d3.range(graph.nodes.length)
 
 console.log("nodes: #{graph.nodes.length}, links: #{graph.links.length}")
 
+indexScale = d3.scale.linear()
+    .domain([0, graph.nodes.length])
+    .range([0, canvasWidth])
+
 tick = (d) ->
     graphUpdate(0)
 
@@ -122,32 +139,25 @@ forceLayout = () ->
         .links(graph.links)
         .start()
 
-branchLayout = () ->
+linearLayout = () ->
     force.stop()
-
-    graph.nodes.forEach((d, i) ->
+    graph.nodes.forEach((d, i) -> 
         d.y = yScale(d.branch)
+        # d.x = indexScale(i)
     )
-
     graphUpdate(500)
 
-branchColor = () ->
-    d3.selectAll("circle")
-        .transition()
-        .duration(500)
-        .style("fill", (d) -> fill(d.branch))
-
 graphUpdate = (delay) ->
-    link.transition().duration(delay)
+    links.transition().duration(delay)
         .attr("x1", (d) -> d.target.x)
         .attr("y1", (d) -> d.target.y)
         .attr("x2", (d) -> d.source.x)
         .attr("y2", (d) -> d.source.y)
 
-    node.transition().duration(delay)
+    nodes.transition().duration(delay)
         .attr("transform", (d) -> "translate(#{d.x}, #{d.y})")
 
-# Generate the force layout
+# Generate force layout
 force = d3.layout.force()
     .size([canvasWidth, canvasHeight])
     .charge(-30)
@@ -157,26 +167,40 @@ force = d3.layout.force()
     .on("end", (d) -> )
 
 d3.select("input[value='forceLayout']").on("click", forceLayout)
-d3.select("input[value='branchLayout']").on("click", branchLayout)
+d3.select("input[value='linearLayout']").on("click", linearLayout)
 
-d3.select("input[value='noColor']").on("click", () ->
-    d3.selectAll("circle").transition().duration(500).style("fill", "#66CC66")
-)
-
-d3.select("input[value='branchColor']").on("click", branchColor)
-
-link = svg.selectAll(".link")
+links = svg.selectAll(".link")
     .data(graph.links)
     .enter()
     .append("line")
     .attr("class", "link")
 
-node = svg.selectAll(".node")
+nodes = svg.selectAll(".node")
     .data(graph.nodes)
     .enter()
     .append("g")
     .attr("class", "node")
+    .append("circle")
+    .attr("r", 5)
+    .style("fill", (d) -> colors(d.branch))
 
-node.append("circle").attr("r", 5).attr("stroke", "gray")
+links.on("mouseover", (d, i) -> 
+    d3.select(this).style("stroke", "red")
+)
+
+links.on("mouseout", (d, i) ->
+    d3.select(this).transition().duration(500)
+        .style("stroke", "gray")
+)
+
+nodes.on("mouseover", (d, i) -> 
+    d3.select(this).style("fill", "red")
+)
+
+nodes.on("mouseout", (d, i) ->
+    d3.select(this).transition().duration(500)
+        .style("fill", colors(d.branch))
+)
 
 forceLayout()
+linearLayout()
