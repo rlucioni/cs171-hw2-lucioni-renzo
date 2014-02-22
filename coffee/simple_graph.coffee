@@ -1,11 +1,73 @@
-# margin = 
-#     top:    50, 
-#     bottom: 10, 
-#     left:   250, 
-#     right:  40
+canvasWidth = 900
+canvasHeight = 700
 
-# canvasWidth = 1000 - margin.left - margin.right
-# canvasHeight = 1000 - margin.top - margin.bottom
+svg = d3.select("body").append("svg")
+    .attr("width", canvasWidth)
+    .attr("height", canvasHeight)
+
+# Use 10 colors from ColorBrewer Set3
+fill = d3.scale.ordinal()
+    .domain(d3.range(10))
+    .range(colorbrewer.Set3[10])
+
+graph = {nodes: [], links: []}
+
+numNodes = 100
+numCats = 10
+
+graph.nodes = d3.range(numNodes)
+    .map(() -> {cat: Math.floor(numCats*Math.random())})
+
+graph.nodes.map((d, i) ->
+    graph.nodes.map((e, j) ->
+        if Math.random() > 0.99 and i != j
+            graph.links.push({source: i, target: j})
+    )
+)
+
+parseLinkHeader = (header) ->
+    if header.length == 0
+        throw new Error("Link header must be of non-zero length.")
+    values = header.split(',')
+    links = {}
+    
+    parse = (value) ->
+        segments = value.split(';')
+        url = segments[0].replace(/<(.*)>/, '$1').trim()
+        rel = segments[1].replace(/rel="(.*)"/, '$1').trim()
+        links[rel] = url
+
+    parse(value) for value in values
+
+    return links
+
+getData = (url) ->
+    request = new XMLHttpRequest()
+    # async false means send() will not return until response received (synchronous)
+    request.open('GET', url, false)
+    request.send()
+
+    linkHeader = request.getResponseHeader("Link")
+    links = parseLinkHeader(linkHeader)
+
+    if request.status == 200
+        data = JSON.parse(request.responseText)
+
+    console.log(data.length)
+
+    # continue consuming "next" page until there are none left
+    if "next" of links
+        # dat recursion doe
+        data = data.concat(getData(links["next"]))
+
+    return data
+
+# using a public access (scopeless) token for Basic Authentication
+accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511"
+commitsUrl = "https://api.github.com/repos/jsocol/django-waffle/commits?per_page=100&access_token=#{accessToken}"
+data = getData(commitsUrl)
+
+console.log(data.length)
 
 tick = (d) ->
     graphUpdate(0)
@@ -89,33 +151,6 @@ graphUpdate = (delay) ->
     node.transition().duration(delay)
         .attr("transform", (d) -> "translate(#{d.x}, #{d.y})")
 
-canvasWidth = 900
-canvasHeight = 700
-
-svg = d3.select("body").append("svg")
-    .attr("width", canvasWidth)
-    .attr("height", canvasHeight)
-
-# Use 10 colors from ColorBrewer Set3
-fill = d3.scale.ordinal()
-    .domain(d3.range(10))
-    .range(colorbrewer.Set3[10])
-
-graph = {nodes: [], links: []}
-
-nb_nodes = 100
-nb_cat = 10
-
-graph.nodes = d3.range(nb_nodes)
-    .map(() -> {cat: Math.floor(nb_cat*Math.random())})
-
-graph.nodes.map((d, i) ->
-    graph.nodes.map((e, j) ->
-        if Math.random() > 0.99 and i != j
-            graph.links.push({source: i, target: j})
-    )
-)
-
 # Generate the force layout
 force = d3.layout.force()
     .size([canvasWidth, canvasHeight])
@@ -155,6 +190,6 @@ node = svg.selectAll(".node")
     .append("g")
     .attr("class", "node")
 
-node.append("circle").attr("r", 5)
+node.append("circle").attr("r", 5).attr("stroke", "gray")
 
 forceLayout()
