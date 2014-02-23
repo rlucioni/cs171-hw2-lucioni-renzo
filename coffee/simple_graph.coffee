@@ -75,7 +75,7 @@ margin =
     left:   10, 
     right:  10
 
-canvasWidth = 1200 - margin.left - margin.right
+canvasWidth = 1100 - margin.left - margin.right
 canvasHeight = 800 - margin.top - margin.bottom
 
 svg = d3.select("body").append("svg")
@@ -143,10 +143,7 @@ tick = (d) ->
 forceLayout = () ->
     # Disable scale radio buttons
     d3.selectAll("input[name='scale']").attr("disabled", true)
-
-    force.nodes(graph.nodes)
-        .links(graph.links)
-        .start()
+    force.start()
 
 scale = "index"
 linearLayout = () ->
@@ -168,11 +165,9 @@ graphUpdate = (delay) ->
         .attr("cx", (d) -> d.x = Math.max(5, Math.min(canvasWidth - 5, d.x)))
         .attr("cy", (d) -> d.y = Math.max(5, Math.min(canvasHeight - 5, d.y)))
 
-    links.transition().duration(delay)
-        .attr("x1", (d) -> d.target.x)
-        .attr("y1", (d) -> d.target.y)
-        .attr("x2", (d) -> d.source.x)
-        .attr("y2", (d) -> d.source.y)
+    links.transition().duration(delay).attr("d", (d) -> 
+        "M#{d.source.x},#{d.source.y} L#{d.target.x},#{d.target.y}"
+    )
 
     nodes.transition().duration(delay)
         .attr("transform", (d) -> "translate(#{d.x}, #{d.y})")
@@ -185,6 +180,8 @@ force = d3.layout.force()
     .on("tick", tick)
     .on("start", (d) -> )
     .on("end", (d) -> )
+    .nodes(graph.nodes)
+    .links(graph.links)
 
 d3.select("input[value='forceLayout']").on("click", forceLayout)
 d3.select("input[value='linearLayout']").on("click", linearLayout)
@@ -198,14 +195,30 @@ d3.select("input[value='timeScale']").on("click", () ->
     linearLayout()
 )
 
-links = svg.selectAll(".link")
-    .data(graph.links)
-    .enter()
-    .append("line")
+# Define arrow markers
+svg.append("svg:defs").selectAll("marker")
+    .data(["end"])
+    .enter().append("svg:marker")
+    .attr("fill", "gray")
+    .attr("id", String)
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 15)
+    .attr("refY", -1.5)
+    .attr("markerWidth", 4)
+    .attr("markerHeight", 4)
+    .attr("orient", "auto")
+    .append("svg:path")
+    .attr("d", "M0,-5L10,0L0,5")
+
+# Use paths to draw links
+links = svg.append("svg:g").selectAll("path")
+    .data(force.links())
+    .enter().append("svg:path")
     .attr("class", "link")
+    .attr("marker-end", "url(#end)");
 
 nodes = svg.selectAll(".node")
-    .data(graph.nodes)
+    .data(force.nodes())
     .enter()
     .append("g")
     .attr("class", "node")
@@ -222,8 +235,13 @@ links.on("mouseout", (d, i) ->
         .style("stroke", "gray")
 )
 
-nodes.on("mouseover", (d, i) -> 
+nodes.on("mouseover", (d, i) ->
     d3.select(this).style("fill", "red")
+    # Fade other branches
+    nodes.style("opacity", (nodeData) ->
+        if nodeData.branch != d.branch
+            return 0.5
+    )
 
     d3.select("#tooltip")
         # Position tooltip southeast of pointer
@@ -245,10 +263,12 @@ nodes.on("mouseover", (d, i) ->
 nodes.on("mouseout", (d, i) ->
     d3.select(this).transition().duration(500)
         .style("fill", colors(d.branch))
+    nodes.style("opacity", "1")
     d3.select("#tooltip").classed("hidden", true)
 )
 
 # Attach nodes and links
 forceLayout()
+
 # Default to index-based linear layout ("branched")
 linearLayout()
