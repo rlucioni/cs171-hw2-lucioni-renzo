@@ -14,7 +14,9 @@ parseLinkHeader = (header) ->
 
     return links
 
+# Alternative to using d3.json - this allows easy access to request headers
 getData = (url) ->
+    console.log("Getting data from #{url}")
     request = new XMLHttpRequest()
     # Setting async to false means send() will not return until response received (synchronous)
     request.open('GET', url, false)
@@ -73,8 +75,8 @@ margin =
     left:   10, 
     right:  10
 
-canvasWidth = 1000 - margin.left - margin.right
-canvasHeight = 700 - margin.top - margin.bottom
+canvasWidth = 1200 - margin.left - margin.right
+canvasHeight = 800 - margin.top - margin.bottom
 
 svg = d3.select("body").append("svg")
     .attr("width", canvasWidth + margin.left + margin.right)
@@ -107,6 +109,9 @@ for name, branches of contributors
             
             graph.nodes.push(metadata)
 
+# Sort by date
+graph.nodes.sort((a, b) -> a.date.getTime() - b.date.getTime())
+
 # Process nodes to populate link array
 for i in d3.range(graph.nodes.length)
     focusNode = graph.nodes[i]
@@ -115,8 +120,6 @@ for i in d3.range(graph.nodes.length)
             candidateNode = graph.nodes[j]
             if sha == candidateNode.sha and focusNode.sha != candidateNode.sha
                 graph.links.push({source: j, target: i})
-
-console.log("nodes: #{graph.nodes.length}, links: #{graph.links.length}")
 
 colors = d3.scale.ordinal()
     .domain(allBranchNames)
@@ -138,15 +141,24 @@ tick = (d) ->
     graphUpdate(0)
 
 forceLayout = () ->
+    # Disable scale radio buttons
+    d3.selectAll("input[name='scale']").attr("disabled", true)
+
     force.nodes(graph.nodes)
         .links(graph.links)
         .start()
 
+scale = "index"
 linearLayout = () ->
     force.stop()
+    # Enable scale radio buttons
+    d3.selectAll("input[name='scale']").attr("disabled", null)
     graph.nodes.forEach((d, i) -> 
         d.y = yScale(d.branch)
-        d.x = timeScale(d.date)
+        if scale == "time"
+            d.x = timeScale(d.date)
+        else
+            d.x = indexScale(i)
     )
     graphUpdate(500)
 
@@ -176,6 +188,15 @@ force = d3.layout.force()
 
 d3.select("input[value='forceLayout']").on("click", forceLayout)
 d3.select("input[value='linearLayout']").on("click", linearLayout)
+
+d3.select("input[value='indexScale']").on("click", () ->
+    scale = "index"
+    linearLayout()
+)
+d3.select("input[value='timeScale']").on("click", () ->
+    scale = "time"
+    linearLayout()
+)
 
 links = svg.selectAll(".link")
     .data(graph.links)
@@ -207,7 +228,7 @@ nodes.on("mouseover", (d, i) ->
     d3.select("#tooltip")
         # Position tooltip southeast of pointer
         .style("left", "#{d3.event.pageX + 5}px")
-        .style("top", "#{d3.event.pageY - 10}px")
+        .style("top", "#{d3.event.pageY + 5}px")
     d3.select("#author")
         .text(d.author)
     d3.select("#date")
@@ -229,5 +250,5 @@ nodes.on("mouseout", (d, i) ->
 
 # Attach nodes and links
 forceLayout()
-# Default to linear layout ("branched")
+# Default to index-based linear layout ("branched")
 linearLayout()

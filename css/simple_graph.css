@@ -15,6 +15,7 @@ input[type="radio"] {
     width: 400px;
     height: auto;
     padding: 10px;
+    background-color: rgba(255,255,255,0.5);
 }
 #tooltip.hidden {
     display: none;
