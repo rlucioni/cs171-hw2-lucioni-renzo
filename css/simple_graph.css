@@ -1,7 +1,7 @@
 body {
     font-family: 'Lato', sans-serif;
 }
-#buttons {
+.buttons {
     margin-left: auto;
     margin-right: auto;
     text-align: center;
@@ -9,6 +9,19 @@ body {
 }
 input[type="radio"] {
     margin: 0 10px 0 10px;
+}
+#tooltip {
+    position: absolute;
+    width: 400px;
+    height: auto;
+    padding: 10px;
+}
+#tooltip.hidden {
+    display: none;
+}
+#tooltip p {
+    margin: 0;
+    line-height: 20px
 }
 svg {
     display: block;

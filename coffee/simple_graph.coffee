@@ -66,8 +66,6 @@ for branch in branches
 #         commitsUrl = "#{fork.url}/commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
 #         contributors[fork.owner.login][branch.name] = getData(commitsUrl)
 
-console.log contributors
-
 # Mike Bostock's margin convention
 margin = 
     top:    10, 
@@ -84,35 +82,28 @@ svg = d3.select("body").append("svg")
     .append("g")
     .attr("transform", "translate(#{margin.left}, #{margin.top})")
 
-allBranchNames = []
-for name, branches of contributors
-    for branchName of branches
-        if branchName not in allBranchNames
-            allBranchNames.push(branchName)
-
-colors = d3.scale.ordinal()
-    .domain(allBranchNames)
-    .range(colorbrewer.Set3[12])
-
-yScale = d3.scale.ordinal()
-    .domain(allBranchNames)
-    .rangeRoundBands([0, canvasHeight], 0.5)
-
 graph = {nodes: [], links: []}
 
+allBranchNames = []
+allTimestamps = []
 # Populate node array; nodes are encoded with their parents' SHAs
 for name, branches of contributors
-    for branch, commits of branches
+    for branchName, commits of branches
+        if branchName not in allBranchNames
+            allBranchNames.push(branchName)
+        
         for commit in commits
             metadata =
                 author: commit.commit.author.name
-                # ISO 8601 timestamp
-                date: commit.commit.author.date
+                date: new Date(commit.commit.author.date)
                 message: commit.commit.message
-                branch: branch
+                branch: branchName
                 sha: commit.sha
                 htmlUrl: commit.html_url
                 parentShas: (metadata.sha for parent, metadata of commit.parents)
+
+            if metadata.date not in allTimestamps
+                allTimestamps.push(metadata.date)
             
             graph.nodes.push(metadata)
 
@@ -127,9 +118,21 @@ for i in d3.range(graph.nodes.length)
 
 console.log("nodes: #{graph.nodes.length}, links: #{graph.links.length}")
 
+colors = d3.scale.ordinal()
+    .domain(allBranchNames)
+    .range(colorbrewer.Set3[12])
+
+yScale = d3.scale.ordinal()
+    .domain(allBranchNames)
+    .rangeRoundBands([0, canvasHeight], 0.5)
+
 indexScale = d3.scale.linear()
     .domain([0, graph.nodes.length])
-    .range([0, canvasWidth])
+    .rangeRound([0, canvasWidth])
+
+timeScale = d3.time.scale()
+    .domain([d3.min(allTimestamps), d3.max(allTimestamps)])
+    .rangeRound([0, canvasWidth])
 
 tick = (d) ->
     graphUpdate(0)
@@ -143,11 +146,16 @@ linearLayout = () ->
     force.stop()
     graph.nodes.forEach((d, i) -> 
         d.y = yScale(d.branch)
-        # d.x = indexScale(i)
+        d.x = timeScale(d.date)
     )
     graphUpdate(500)
 
 graphUpdate = (delay) ->
+    # Makes SVG element borders into "walls" so nodes can't escape
+    nodes.transition().duration(delay)
+        .attr("cx", (d) -> d.x = Math.max(5, Math.min(canvasWidth - 5, d.x)))
+        .attr("cy", (d) -> d.y = Math.max(5, Math.min(canvasHeight - 5, d.y)))
+
     links.transition().duration(delay)
         .attr("x1", (d) -> d.target.x)
         .attr("y1", (d) -> d.target.y)
@@ -195,12 +203,31 @@ links.on("mouseout", (d, i) ->
 
 nodes.on("mouseover", (d, i) -> 
     d3.select(this).style("fill", "red")
+
+    d3.select("#tooltip")
+        # Position tooltip southeast of pointer
+        .style("left", "#{d3.event.pageX + 5}px")
+        .style("top", "#{d3.event.pageY - 10}px")
+    d3.select("#author")
+        .text(d.author)
+    d3.select("#date")
+        .text(d.date.toString())
+    d3.select("#message")
+        .text(d.message)
+    d3.select("#sha")
+        .text(d.sha)
+    d3.select("#branch")
+        .text(d.branch)
+    d3.select("#tooltip").classed("hidden", false)
 )
 
 nodes.on("mouseout", (d, i) ->
     d3.select(this).transition().duration(500)
         .style("fill", colors(d.branch))
+    d3.select("#tooltip").classed("hidden", true)
 )
 
+# Attach nodes and links
 forceLayout()
+# Default to linear layout ("branched")
 linearLayout()
