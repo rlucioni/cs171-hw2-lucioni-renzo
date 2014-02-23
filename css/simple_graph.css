@@ -10,6 +10,13 @@ body {
 input[type="radio"] {
     margin: 0 10px 0 10px;
 }
+#title {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    padding: 20px;
+    font-size: 1.7em;
+}
 #tooltip {
     position: absolute;
     width: 400px;

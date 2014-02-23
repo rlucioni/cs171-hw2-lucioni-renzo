@@ -39,7 +39,8 @@ getData = (url) ->
 
 # Scope-less public access token for Basic Authentication
 accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511"
-# Django Waffle is a Django feature flipper
+# django-waffle is a Django feature flipper
+repoName = "django-waffle"
 rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
 rootUser = "jsocol"
 
@@ -50,9 +51,18 @@ contributors[rootUser] = {}
 branchesUrl = "#{rootUrl}branches?access_token=#{accessToken}"
 branches = getData(branchesUrl)
 
+# Pull commits from master first (assumes branch "master" exists)
+commitsUrl = "#{rootUrl}commits?sha=master&per_page=100&access_token=#{accessToken}"
+# Chrome return properties in the same order they were inserted, so we insert "master" first
+contributors[rootUser]["master"] = getData(commitsUrl)
+
 for branch in branches
+    # We've already pulled commits from master, so we'll ignore it
+    if branch.name == "master"
+        continue
     commitsUrl = "#{rootUrl}commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
     contributors[rootUser][branch.name] = getData(commitsUrl)
+    # contributors[rootUser]["#{rootUser}/#{branch.name}"] = getData(commitsUrl)
 
 # Get forks
 # forksUrl = "#{rootUrl}forks?access_token=#{accessToken}"
@@ -67,22 +77,7 @@ for branch in branches
 #     for branch in branches
 #         commitsUrl = "#{fork.url}/commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
 #         contributors[fork.owner.login][branch.name] = getData(commitsUrl)
-
-# Mike Bostock's margin convention
-margin = 
-    top:    10, 
-    bottom: 10, 
-    left:   10, 
-    right:  10
-
-canvasWidth = 1100 - margin.left - margin.right
-canvasHeight = 800 - margin.top - margin.bottom
-
-svg = d3.select("body").append("svg")
-    .attr("width", canvasWidth + margin.left + margin.right)
-    .attr("height", canvasHeight + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(#{margin.left}, #{margin.top})")
+#         # contributors[fork.owner.login]["#{fork.owner.login}/#{branch.name}"] = getData(commitsUrl)
 
 graph = {nodes: [], links: []}
 
@@ -95,11 +90,22 @@ for name, branches of contributors
             allBranchNames.push(branchName)
         
         for commit in commits
+            # IMPORTANT! Ignores duplicate commits, like the Network Visualizer;
+            # as a result, we display each commit only once.
+            duplicate = false
+            for storedCommit in graph.nodes
+                if commit.sha == storedCommit.sha
+                    duplicate = true
+                    break
+            if duplicate
+                continue
+
             metadata =
                 author: commit.commit.author.name
                 date: new Date(commit.commit.author.date)
                 message: commit.commit.message
                 branch: branchName
+                # branch: "#{name}/#{branchName}"
                 sha: commit.sha
                 htmlUrl: commit.html_url
                 parentShas: (metadata.sha for parent, metadata of commit.parents)
@@ -109,7 +115,7 @@ for name, branches of contributors
             
             graph.nodes.push(metadata)
 
-# Sort by date
+# Sort commits by date
 graph.nodes.sort((a, b) -> a.date.getTime() - b.date.getTime())
 
 # Process nodes to populate link array
@@ -120,6 +126,26 @@ for i in d3.range(graph.nodes.length)
             candidateNode = graph.nodes[j]
             if sha == candidateNode.sha and focusNode.sha != candidateNode.sha
                 graph.links.push({source: j, target: i})
+
+# Mike Bostock's margin convention
+margin = 
+    top:    10, 
+    bottom: 10, 
+    left:   10, 
+    right:  10
+
+canvasWidth = 1100 - margin.left - margin.right
+canvasHeight = 800 - margin.top - margin.bottom
+
+title = d3.select("body").append("div")
+    .attr("id", "title")
+    .text("The #{repoName} network graph")
+    
+svg = d3.select("body").append("svg")
+    .attr("width", canvasWidth + margin.left + margin.right)
+    .attr("height", canvasHeight + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(#{margin.left}, #{margin.top})")
 
 colors = d3.scale.ordinal()
     .domain(allBranchNames)
@@ -143,6 +169,8 @@ tick = (d) ->
 forceLayout = () ->
     # Disable scale radio buttons
     d3.selectAll("input[name='scale']").attr("disabled", true)
+    # Hide labels
+    labels.attr("visibility", "hidden")
     force.start()
 
 scale = "index"
@@ -150,6 +178,8 @@ linearLayout = () ->
     force.stop()
     # Enable scale radio buttons
     d3.selectAll("input[name='scale']").attr("disabled", null)
+    # Show labels
+    labels.attr("visibility", "visible")
     graph.nodes.forEach((d, i) -> 
         d.y = yScale(d.branch)
         if scale == "time"
@@ -219,12 +249,20 @@ links = svg.append("svg:g").selectAll("path")
 
 nodes = svg.selectAll(".node")
     .data(force.nodes())
-    .enter()
-    .append("g")
+    .enter().append("g")
     .attr("class", "node")
     .append("circle")
     .attr("r", 5)
     .style("fill", (d) -> colors(d.branch))
+
+labels = svg.selectAll("text")
+    .data(allBranchNames)
+    .enter().append("text")
+    .attr("x", 0)
+    .attr("y", (d) -> yScale(d) - 10)
+    # .attr("text-anchor", "end")
+    .text((d) -> d)
+    .attr("visibility", "visible")
 
 links.on("mouseover", (d, i) -> 
     d3.select(this).style("stroke", "red")
@@ -253,10 +291,10 @@ nodes.on("mouseover", (d, i) ->
         .text(d.date.toString())
     d3.select("#message")
         .text(d.message)
-    d3.select("#sha")
-        .text(d.sha)
     d3.select("#branch")
         .text(d.branch)
+    d3.select("#sha")
+        .text(d.sha)
     d3.select("#tooltip").classed("hidden", false)
 )
 
