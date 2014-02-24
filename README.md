@@ -164,9 +164,11 @@ Let's re-construct the GitHub Network Graph Visualizer using [simple_graph.html]
 
 4. Add SVG markers to show the link direction ([example](http://bl.ocks.org/d3noob/5155181)) and add labels for branches.
 
-5. Color the nodes by branch, and when hovering over nodes, emphasize the current branch and show some details about the node itself (e.g., a tooltip with the node characteristics).
+5. Color the nodes by branch or user (your choice), and when hovering over nodes, emphasize the current branch and show some details about the node itself (e.g., a tooltip with the node characteristics).
 
-6. As you may have noticed, links connecting commits are not straight lines in the GitHub network graph. Because SVG `<line>` elements are not a flexible way to draw curves, switch to using [`<path>`](http://www.w3.org/TR/SVG/paths.html) elements. You'll be able to add [control points](http://en.wikipedia.org/wiki/Control_point_(mathematics)) to shape the curve as you wish and choose the right [interpolation function](https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-line_interpolate). Here is an example of use of control points:
+6. Vertically align your nodes either driven by user, or by branch (your choice). Ideally, you should choose color for one and position for the other of the two variables user or branch.    
+
+7. As you may have noticed, links connecting commits are not straight lines in the GitHub network graph. Because SVG `<line>` elements are not a flexible way to draw curves, switch to using [`<path>`](http://www.w3.org/TR/SVG/paths.html) elements. You'll be able to add [control points](http://en.wikipedia.org/wiki/Control_point_(mathematics)) to shape the curve as you wish and choose the right [interpolation function](https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-line_interpolate). Here is an example of use of control points:
 
 ```javascript
 var line = d3.svg.line()
