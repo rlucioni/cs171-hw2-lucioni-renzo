@@ -39,10 +39,15 @@ getData = (url) ->
 
 # Scope-less public access token for Basic Authentication
 accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511"
-# django-waffle is a Django feature flipper
+# Mid-size repo; django-waffle is a Django feature flipper
 repoName = "django-waffle"
 rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
 rootUser = "jsocol"
+
+# Large repo; takes time to load all data, but the resulting graph is pretty cool
+# repoName = "Caleydo"
+# rootUrl = "https://api.github.com/repos/Caleydo/caleydo/"
+# rootUser = "Caleydo"
 
 # Contains commit data, organized by contributor -> branch -> commits; may include forks
 contributors = {}
@@ -90,8 +95,9 @@ for name, branches of contributors
             allBranchNames.push(branchName)
         
         for commit in commits
-            # IMPORTANT! Ignores duplicate commits, like the Network Visualizer;
-            # as a result, we display each commit only once.
+            # IMPORTANT! Excludes duplicate commits, like GitHub's Network Visualizer;
+            # as a result, we display each commit only once. This is a critical part
+            # of the visualization, and also improves performance significantly.
             duplicate = false
             for storedCommit in graph.nodes
                 if commit.sha == storedCommit.sha
@@ -189,15 +195,22 @@ linearLayout = () ->
     )
     graphUpdate(500)
 
+line = d3.svg.line()
+    .x((d) -> d.x)
+    .y((d) -> d.y)
+
 graphUpdate = (delay) ->
     # Makes SVG element borders into "walls" so nodes can't escape
     nodes.transition().duration(delay)
         .attr("cx", (d) -> d.x = Math.max(5, Math.min(canvasWidth - 5, d.x)))
         .attr("cy", (d) -> d.y = Math.max(5, Math.min(canvasHeight - 5, d.y)))
 
-    links.transition().duration(delay).attr("d", (d) -> 
-        "M#{d.source.x},#{d.source.y} L#{d.target.x},#{d.target.y}"
-    )
+    links.transition().duration(delay)
+        .attr("d", (d) -> line([
+            {x: d.source.x, y: d.source.y},
+            {x: d.source.x, y: d.target.y}, 
+            {x: d.target.x, y: d.target.y}
+        ]))
 
     nodes.transition().duration(delay)
         .attr("transform", (d) -> "translate(#{d.x}, #{d.y})")
@@ -238,6 +251,7 @@ svg.append("svg:defs").selectAll("marker")
     .attr("markerHeight", 4)
     .attr("orient", "auto")
     .append("svg:path")
+    .attr("class", "arrowhead")
     .attr("d", "M0,-5L10,0L0,5")
 
 # Use paths to draw links
@@ -254,13 +268,13 @@ nodes = svg.selectAll(".node")
     .append("circle")
     .attr("r", 5)
     .style("fill", (d) -> colors(d.branch))
+    # .call(force.drag)
 
 labels = svg.selectAll("text")
     .data(allBranchNames)
     .enter().append("text")
     .attr("x", 0)
     .attr("y", (d) -> yScale(d) - 10)
-    # .attr("text-anchor", "end")
     .text((d) -> d)
     .attr("visibility", "visible")
 
@@ -307,6 +321,5 @@ nodes.on("mouseout", (d, i) ->
 
 # Attach nodes and links
 forceLayout()
-
 # Default to index-based linear layout ("branched")
 linearLayout()

@@ -38,6 +38,12 @@ svg {
     display: block;
     margin: 0 auto;
 }
+path {
+    fill: none;
+}
+.arrowhead {
+    fill: gray;
+}
 .link {
     stroke: gray;
     stroke-width: 1.5px;
