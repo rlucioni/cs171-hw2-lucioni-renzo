@@ -63,7 +63,7 @@ Your should see output similar to the following (partial) example. The output gi
 
 To learn more about the GitHub API, read the related [Github API documentation](http://developer.github.com/guides/getting-started/). 
  
-As an alternative to downloading data, you can **load the URL from the GitHub API.** GitHub allows [Cross Origin Resource Sharing](http://developer.github.com/v3/#cross-origin-resource-sharing), which means you can directly call the API from Javascript as follows:
+As an alternative to downloading data, you can **load the URL from the GitHub API.** GitHub allows [Cross Origin Resource Sharing](http://developer.github.com/v3/#cross-origin-resource-sharing), which means you can directly call the API from JavaScript as follows:
 
 ```javascript
     d3.json("https://api.github.com/search/repositories?q=visualization+language:javascript&sort=stars&order=desc", function(data) {
@@ -83,7 +83,7 @@ The GitHub website provides a user-friendly way to look at the data. On GitHub, 
 
 <img src="img/user_dashboard.png" width="600" style="display: block; margin-left:auto; margin-right:auto;"/>
 
-Open a Github profile and use your browser's developer tools to locate the `div` with the `id` of `contributions-calendar`. Its first child `div` has a `data-url` attribute, which points to the raw data used by the visualization. It is a univariate time series and below is a sample of the data:
+Open a GitHub profile and use your browser's developer tools to locate the `div` with the `id` of `contributions-calendar`. Its first child `div` has a `data-url` attribute, which points to the raw data used by the visualization. It is a univariate time series and below is a sample of the data:
 
 > [["2013/02/03",0],["2013/02/04",0],["2013/02/05",0],["2013/02/06",0],["2013/02/07",0],["2013/02/08",0],["2013/02/09",0],["2013/02/10",0]
  
@@ -156,7 +156,7 @@ Let's re-construct the GitHub Network Graph Visualizer using [simple_graph.html]
 
 0. Choose any repository, as long as it meets the following  three conditions: (1) it contains commits from at least two users and has at least two branches, (2) it contains at least 30 commits from different users and branches, and (3) it is public. Because querying the API may result in partial data (e.g., not all commits are visible) it is perfectly fine if there are missing nodes and connections. In general, the diversity of the commits is more important than the quantity. For this problem you may only use a subset of all the commits, between 30 and 100 commits (but you can select more if you want).
 
-1. Use `d3.json` to fetch commit data ([example](https://api.github.com/repos/caleydo/caleydo/commits), see [documentation](http://developer.github.com/v3/repos/commits/)) to use as input dataset to the graph. You can [find all the branches](https://api.github.com/repos/mbostock/d3/branches) of a repository, or you can directly [query the commits by branch](https://api.github.com/repos/mbostock/d3/commits?per_page=100&sha=adopt) using the URL, as demonstrated in the linked examples. If you experience delays or calls limits download the commits and use them as an offline json file. You may have to call the API serveral times, so you will have to make sure that you create the visualization only when all the data has been retrieved. [Here is a discussion on how to do that](https://groups.google.com/forum/#!msg/d3-js/3Y9VHkOOdCM/YnmOPopWUxQJ). For problem 2 you do not need to incude forks, but you may use them if you want to.
+1. Use `d3.json` to fetch commit data ([example](https://api.github.com/repos/caleydo/caleydo/commits), see [documentation](http://developer.github.com/v3/repos/commits/)) to use as input dataset to the graph. You can [find all the branches](https://api.github.com/repos/mbostock/d3/branches) of a repository, or you can directly [query the commits by branch](https://api.github.com/repos/mbostock/d3/commits?per_page=100&sha=adopt) using the URL, as demonstrated in the linked examples. If you experience delays or calls limits download the commits and use them as an offline JSON file. You may have to call the API serveral times, so you will have to make sure that you create the visualization only when all the data has been retrieved. [Here is a discussion on how to do that](https://groups.google.com/forum/#!msg/d3-js/3Y9VHkOOdCM/YnmOPopWUxQJ). For problem 2 you do not need to include forks, but you may use them if you want to.
 
 2. Populate the provided graph data structure (`{nodes:[], links:[]}`) with commit data. Each node represents a commit with a unique id, each link points to the `parents` which is an attribute of the commit. Note there may not be parents or there can be multiple (e.g., if the commit is a merge of multiple branches). Add all metadata of a commit to the node. Be careful: some attributes are keywords reserved for the layout function (e.g., `x` and `y`) and you can't use them as variable names for metadata.
 
@@ -169,7 +169,18 @@ Let's re-construct the GitHub Network Graph Visualizer using [simple_graph.html]
 6. As you may have noticed, links connecting commits are not straight lines in the GitHub network graph. Because SVG `<line>` elements are not a flexible way to draw curves, switch to using [`<path>`](http://www.w3.org/TR/SVG/paths.html) elements. You'll be able to add [control points](http://en.wikipedia.org/wiki/Control_point_(mathematics)) to shape the curve as you wish and choose the right [interpolation function](https://github.com/mbostock/d3/wiki/SVG-Shapes#wiki-line_interpolate). Here is an example of use of control points:
 
 ```javascript
-line([{x:d.source.x, y:d.source.y}, {x:d.source.x, y:d.source.y+offset_y}, {x:d.target.x, y:d.target.y+offset_y}, {x:d.target.x, y:d.target})
+var line = d3.svg.line()
+  .x(function(d) { return d.x; })
+  .y(function(d) { return d.y; });
+
+...
+
+line([
+  {x: d.source.x, y: d.source.y}, 
+  {x: d.source.x, y: d.source.y+offset_y}, 
+  {x: d.target.x, y: d.target.y+offset_y}, 
+  {x: d.target.x, y: d.target.y}
+])
 ```
 
 The following three screenshots show the results you may expect.
@@ -189,7 +200,7 @@ The following three screenshots show the results you may expect.
 Naturally, you are free to change the aesthetics and use alternative node color, links and text styling.
 
 ## Problem 3: Design Critique and Sketching
-*Answer the questions in a file [problem_3_answers.md](problem_3_answers.md), and include your sketch as a pdf file problem_3_sketch.pdf*
+*Answer the questions in a file [problem_3_answers.md](problem_3_answers.md), and include your sketch as a PDF file problem_3_sketch.pdf*
 
 
 ### Questions
@@ -204,16 +215,16 @@ Given your previous design critiques, your experience with the previous graph vi
 
 4. How would you improve your visualization to address issues with the larger and more complex data?
 
-> Lee, B., Plaisant, C., Parr, C. S., Fekete, J. D., & Henry, N. (2006, May). Task taxonomy for graph visualization. In Proceedings of the 2006 AVI workshop on Beyond time and errors: novel evaluation methods for information visualization (pp. 1-5). ACM. ([pdf](http://research.microsoft.com/en-us/um/people/nath/docs/lee_beliv06.pdf))
+> Lee, B., Plaisant, C., Parr, C. S., Fekete, J. D., & Henry, N. (2006, May). Task taxonomy for graph visualization. In Proceedings of the 2006 AVI workshop on Beyond time and errors: novel evaluation methods for information visualization (pp. 1-5). ACM. ([PDF](http://research.microsoft.com/en-us/um/people/nath/docs/lee_beliv06.pdf))
 
 ### Sketch an alternative to the GitHub Network Graph Visualizer
 
-Drawing on your observations from graphing different types of GitHub networks in the previous part, and from the reading, sketch an alternate design for the Github Network graph. Your work should rely on the same source data (i.e. commit history), but be creative — the focus of your visualization is up to you. You are, for example, welcome to aggregate nodes or use additional Github data.
+Drawing on your observations from graphing different types of GitHub networks in the previous part, and from the reading, sketch an alternate design for the GitHub Network graph. Your work should rely on the same source data (i.e. commit history), but be creative — the focus of your visualization is up to you. You are, for example, welcome to aggregate nodes or use additional GitHub data.
 
 Attach to this homework a picture/scan of your sketch, as well as a paragraph explaining the design decisions you made and how it addresses the limits of the GitHub Network Graph Visualizer you previously identified.
 
 ## Problem 4: Sketch Implementation
-*Answer the questions in a file [problem_4_answers.md](problem_4_answers.md) and provide your implementation in [problem_4.html](problem_4.html). You may include external Javascript or stylesheets.*
+*Answer the questions in a file [problem_4_answers.md](problem_4_answers.md) and provide your implementation in [problem_4.html](problem_4.html). You may include external JavaScript or stylesheets.*
 
 You will now implement the sketch you've previously designed. Even though the sketching may have been as a group, you have to implement it yourself.
 
