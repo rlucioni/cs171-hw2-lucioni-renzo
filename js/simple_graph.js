@@ -40,11 +40,11 @@ getData = function(url) {
 
 accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511";
 
-repoName = "django-waffle";
+repoName = "d3";
 
-rootUrl = "https://api.github.com/repos/jsocol/django-waffle/";
+rootUrl = "https://api.github.com/repos/mbostock/d3/";
 
-rootUser = "jsocol";
+rootUser = "mbostock";
 
 contributors = {};
 
@@ -271,7 +271,7 @@ nodes.on("mouseover", function(d, i) {
   d3.select(this).style("fill", "red");
   nodes.style("opacity", function(nodeData) {
     if (nodeData.branch !== d.branch) {
-      return 0.5;
+      return 0.4;
     }
   });
   d3.select("#tooltip").style("left", "" + (d3.event.pageX + 5) + "px").style("top", "" + (d3.event.pageY + 5) + "px");

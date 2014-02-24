@@ -39,15 +39,24 @@ getData = (url) ->
 
 # Scope-less public access token for Basic Authentication
 accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511"
-# Mid-size repo; django-waffle is a Django feature flipper
-repoName = "django-waffle"
-rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
-rootUser = "jsocol"
 
-# Large repo; takes time to load all data, but the resulting graph is pretty cool
-# repoName = "Caleydo"
-# rootUrl = "https://api.github.com/repos/Caleydo/caleydo/"
-# rootUser = "Caleydo"
+# Mid-size repo; django-waffle is a Django feature flipper
+# repoName = "django-waffle"
+# rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
+# rootUser = "jsocol"
+
+# Large repos; take time to load all data, but the resulting graphs are pretty cool
+repoName = "d3"
+rootUrl = "https://api.github.com/repos/mbostock/d3/"
+rootUser = "mbostock"
+
+# repoName = "jquery"
+# rootUrl = "https://api.github.com/repos/jquery/jquery/"
+# rootUser = "jquery"
+
+# repoName = "bootstrap"
+# rootUrl = "https://api.github.com/repos/twbs/bootstrap/"
+# rootUser = "twbs"
 
 # Contains commit data, organized by contributor -> branch -> commits; may include forks
 contributors = {}
@@ -111,7 +120,6 @@ for name, branches of contributors
                 date: new Date(commit.commit.author.date)
                 message: commit.commit.message
                 branch: branchName
-                # branch: "#{name}/#{branchName}"
                 sha: commit.sha
                 htmlUrl: commit.html_url
                 parentShas: (metadata.sha for parent, metadata of commit.parents)
@@ -292,7 +300,7 @@ nodes.on("mouseover", (d, i) ->
     # Fade other branches
     nodes.style("opacity", (nodeData) ->
         if nodeData.branch != d.branch
-            return 0.5
+            return 0.4
     )
 
     d3.select("#tooltip")
