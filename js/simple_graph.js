@@ -292,7 +292,7 @@ nodes.on("mouseout", function(d, i) {
   d3.select(this).transition().duration(500).style("fill", function() {
     return colors(d.author);
   });
-  nodes.style("opacity", "1");
+  nodes.transition().duration(500).style("opacity", "1");
   return d3.select("#tooltip").classed("hidden", true);
 });
 

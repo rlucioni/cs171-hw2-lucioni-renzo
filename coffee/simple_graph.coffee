@@ -40,12 +40,14 @@ getData = (url) ->
 # Scope-less public access token for Basic Authentication
 accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511"
 
-# Mid-size repo; django-waffle is a Django feature flipper
+# Mid-size repo; django-waffle is a Django feature flipper whose graph loads quickly
 repoName = "django-waffle"
 rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
 rootUser = "jsocol"
 
-# Large repos; take time to load all data, but the resulting graphs are pretty cool
+# Large repos; fetching data and generating the graphs takes a while for these
+# NOTE: I've included images of these graphs in img/screenshots, although you can 
+#       create them yourself by uncommenting the appropriate information and reloading
 # repoName = "d3"
 # rootUrl = "https://api.github.com/repos/mbostock/d3/"
 # rootUser = "mbostock"
@@ -104,7 +106,7 @@ for name, branches of contributors
         
         for commit in commits
             # IMPORTANT! Excludes duplicate commits, like GitHub's Network Visualizer;
-            # as a result, we display each commit only once. This is a critical part
+            # as a result, WE DISPLAY EACH COMMIT ONLY ONCE. This is a critical part
             # of the visualization, and also improves performance significantly.
             duplicate = false
             for storedCommit in graph.nodes
@@ -326,7 +328,7 @@ nodes.on("mouseout", (d, i) ->
     # Restore appropriate color
     d3.select(this).transition().duration(500)
         .style("fill", () -> colors(d.author))
-    nodes.style("opacity", "1")
+    nodes.transition().duration(500).style("opacity", "1")
     d3.select("#tooltip").classed("hidden", true)
 )
 
