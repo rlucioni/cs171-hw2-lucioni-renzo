@@ -41,14 +41,14 @@ getData = (url) ->
 accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511"
 
 # Mid-size repo; django-waffle is a Django feature flipper
-# repoName = "django-waffle"
-# rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
-# rootUser = "jsocol"
+repoName = "django-waffle"
+rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
+rootUser = "jsocol"
 
 # Large repos; take time to load all data, but the resulting graphs are pretty cool
-repoName = "d3"
-rootUrl = "https://api.github.com/repos/mbostock/d3/"
-rootUser = "mbostock"
+# repoName = "d3"
+# rootUrl = "https://api.github.com/repos/mbostock/d3/"
+# rootUser = "mbostock"
 
 # repoName = "jquery"
 # rootUrl = "https://api.github.com/repos/jquery/jquery/"
@@ -58,7 +58,7 @@ rootUser = "mbostock"
 # rootUrl = "https://api.github.com/repos/twbs/bootstrap/"
 # rootUser = "twbs"
 
-# Contains commit data, organized by contributor -> branch -> commits; may include forks
+# Contains commit data, organized by contributor -> branch -> commits
 contributors = {}
 
 contributors[rootUser] = {}
@@ -76,7 +76,6 @@ for branch in branches
         continue
     commitsUrl = "#{rootUrl}commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
     contributors[rootUser][branch.name] = getData(commitsUrl)
-    # contributors[rootUser]["#{rootUser}/#{branch.name}"] = getData(commitsUrl)
 
 # Get forks
 # forksUrl = "#{rootUrl}forks?access_token=#{accessToken}"
@@ -91,12 +90,12 @@ for branch in branches
 #     for branch in branches
 #         commitsUrl = "#{fork.url}/commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
 #         contributors[fork.owner.login][branch.name] = getData(commitsUrl)
-#         # contributors[fork.owner.login]["#{fork.owner.login}/#{branch.name}"] = getData(commitsUrl)
 
 graph = {nodes: [], links: []}
 
 allBranchNames = []
 allTimestamps = []
+allAuthors = []
 # Populate node array; nodes are encoded with their parents' SHAs
 for name, branches of contributors
     for branchName, commits of branches
@@ -126,6 +125,9 @@ for name, branches of contributors
 
             if metadata.date not in allTimestamps
                 allTimestamps.push(metadata.date)
+
+            if metadata.author not in allAuthors
+                allAuthors.push(metadata.author)
             
             graph.nodes.push(metadata)
 
@@ -162,7 +164,7 @@ svg = d3.select("body").append("svg")
     .attr("transform", "translate(#{margin.left}, #{margin.top})")
 
 colors = d3.scale.ordinal()
-    .domain(allBranchNames)
+    .domain(allAuthors)
     .range(colorbrewer.Set3[12])
 
 yScale = d3.scale.ordinal()
@@ -275,7 +277,7 @@ nodes = svg.selectAll(".node")
     .attr("class", "node")
     .append("circle")
     .attr("r", 5)
-    .style("fill", (d) -> colors(d.branch))
+    .style("fill", (d) -> colors(d.author))
     # .call(force.drag)
 
 labels = svg.selectAll("text")
@@ -321,8 +323,9 @@ nodes.on("mouseover", (d, i) ->
 )
 
 nodes.on("mouseout", (d, i) ->
+    # Restore appropriate color
     d3.select(this).transition().duration(500)
-        .style("fill", colors(d.branch))
+        .style("fill", () -> colors(d.author))
     nodes.style("opacity", "1")
     d3.select("#tooltip").classed("hidden", true)
 )
