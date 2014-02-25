@@ -67,9 +67,8 @@ contributors[rootUser] = {}
 branchesUrl = "#{rootUrl}branches?access_token=#{accessToken}"
 branches = getData(branchesUrl)
 
-# Pull commits from master first (assumes branch "master" exists)
+# Pull commits from master first, to make it the root (assumes branch "master" exists)
 commitsUrl = "#{rootUrl}commits?sha=master&per_page=100&access_token=#{accessToken}"
-# Chrome return properties in the same order they were inserted, so we insert "master" first
 contributors[rootUser]["master"] = getData(commitsUrl)
 
 for branch in branches
@@ -106,8 +105,11 @@ for name, branches of contributors
         
         for commit in commits
             # IMPORTANT! Excludes duplicate commits, like GitHub's Network Visualizer;
-            # as a result, WE DISPLAY EACH COMMIT ONLY ONCE. This is a critical part
-            # of the visualization, and also improves performance significantly.
+            # as a result, WE DISPLAY EACH COMMIT ONLY ONCE, prioritizing its appearance 
+            # in master. This is a critical part of GitHub's visualization which shows 
+            # disparate repositories, and also improves performance significantly.
+            # Another way of putting this is that once commits are pulled into master,
+            # they are no longer displayed on their own branch.
             duplicate = false
             for storedCommit in graph.nodes
                 if commit.sha == storedCommit.sha
@@ -152,8 +154,8 @@ margin =
     left:   10, 
     right:  10
 
-canvasWidth = 1100 - margin.left - margin.right
-canvasHeight = 800 - margin.top - margin.bottom
+canvasWidth = 1200 - margin.left - margin.right
+canvasHeight = 1000 - margin.top - margin.bottom
 
 title = d3.select("body").append("div")
     .attr("id", "title")
@@ -165,21 +167,25 @@ svg = d3.select("body").append("svg")
     .append("g")
     .attr("transform", "translate(#{margin.left}, #{margin.top})")
 
+# I'm coloring and arranging rows by author. It's trivial to order and/or 
+# color by branch, but coloring and grouping commits by author is depicted in
+# the homework spec, and I think it makes for easier reading.
 colors = d3.scale.ordinal()
     .domain(allAuthors)
     .range(colorbrewer.Set3[12])
 
 yScale = d3.scale.ordinal()
-    .domain(allBranchNames)
+    # .domain(allBranchNames)
+    .domain(allAuthors)
     .rangeRoundBands([0, canvasHeight], 0.5)
 
 indexScale = d3.scale.linear()
     .domain([0, graph.nodes.length])
-    .rangeRound([0, canvasWidth])
+    .rangeRound([150, canvasWidth])
 
 timeScale = d3.time.scale()
     .domain([d3.min(allTimestamps), d3.max(allTimestamps)])
-    .rangeRound([0, canvasWidth])
+    .rangeRound([150, canvasWidth])
 
 tick = (d) ->
     graphUpdate(0)
@@ -199,7 +205,8 @@ linearLayout = () ->
     # Show labels
     labels.attr("visibility", "visible")
     graph.nodes.forEach((d, i) -> 
-        d.y = yScale(d.branch)
+        # d.y = yScale(d.branch)
+        d.y = yScale(d.author)
         if scale == "time"
             d.x = timeScale(d.date)
         else
@@ -283,10 +290,11 @@ nodes = svg.selectAll(".node")
     # .call(force.drag)
 
 labels = svg.selectAll("text")
-    .data(allBranchNames)
+    # .data(allBranchNames)
+    .data(allAuthors)
     .enter().append("text")
     .attr("x", 0)
-    .attr("y", (d) -> yScale(d) - 10)
+    .attr("y", (d) -> yScale(d))
     .text((d) -> d)
     .attr("visibility", "visible")
 
@@ -326,8 +334,7 @@ nodes.on("mouseover", (d, i) ->
 
 nodes.on("mouseout", (d, i) ->
     # Restore appropriate color
-    d3.select(this).transition().duration(500)
-        .style("fill", () -> colors(d.author))
+    d3.select(this).style("fill", () -> colors(d.author))
     nodes.transition().duration(500).style("opacity", "1")
     d3.select("#tooltip").classed("hidden", true)
 )

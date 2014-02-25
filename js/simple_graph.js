@@ -160,9 +160,9 @@ margin = {
   right: 10
 };
 
-canvasWidth = 1100 - margin.left - margin.right;
+canvasWidth = 1200 - margin.left - margin.right;
 
-canvasHeight = 800 - margin.top - margin.bottom;
+canvasHeight = 1000 - margin.top - margin.bottom;
 
 title = d3.select("body").append("div").attr("id", "title").text("The " + repoName + " network graph");
 
@@ -170,11 +170,11 @@ svg = d3.select("body").append("svg").attr("width", canvasWidth + margin.left + 
 
 colors = d3.scale.ordinal().domain(allAuthors).range(colorbrewer.Set3[12]);
 
-yScale = d3.scale.ordinal().domain(allBranchNames).rangeRoundBands([0, canvasHeight], 0.5);
+yScale = d3.scale.ordinal().domain(allAuthors).rangeRoundBands([0, canvasHeight], 0.5);
 
-indexScale = d3.scale.linear().domain([0, graph.nodes.length]).rangeRound([0, canvasWidth]);
+indexScale = d3.scale.linear().domain([0, graph.nodes.length]).rangeRound([150, canvasWidth]);
 
-timeScale = d3.time.scale().domain([d3.min(allTimestamps), d3.max(allTimestamps)]).rangeRound([0, canvasWidth]);
+timeScale = d3.time.scale().domain([d3.min(allTimestamps), d3.max(allTimestamps)]).rangeRound([150, canvasWidth]);
 
 tick = function(d) {
   return graphUpdate(0);
@@ -193,7 +193,7 @@ linearLayout = function() {
   d3.selectAll("input[name='scale']").attr("disabled", null);
   labels.attr("visibility", "visible");
   graph.nodes.forEach(function(d, i) {
-    d.y = yScale(d.branch);
+    d.y = yScale(d.author);
     if (scale === "time") {
       return d.x = timeScale(d.date);
     } else {
@@ -258,8 +258,8 @@ nodes = svg.selectAll(".node").data(force.nodes()).enter().append("g").attr("cla
   return colors(d.author);
 });
 
-labels = svg.selectAll("text").data(allBranchNames).enter().append("text").attr("x", 0).attr("y", function(d) {
-  return yScale(d) - 10;
+labels = svg.selectAll("text").data(allAuthors).enter().append("text").attr("x", 0).attr("y", function(d) {
+  return yScale(d);
 }).text(function(d) {
   return d;
 }).attr("visibility", "visible");
@@ -289,7 +289,7 @@ nodes.on("mouseover", function(d, i) {
 });
 
 nodes.on("mouseout", function(d, i) {
-  d3.select(this).transition().duration(500).style("fill", function() {
+  d3.select(this).style("fill", function() {
     return colors(d.author);
   });
   nodes.transition().duration(500).style("opacity", "1");
