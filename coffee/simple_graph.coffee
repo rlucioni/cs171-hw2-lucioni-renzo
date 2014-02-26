@@ -78,7 +78,8 @@ for branch in branches
     commitsUrl = "#{rootUrl}commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
     contributors[rootUser][branch.name] = getData(commitsUrl)
 
-# Get forks
+# Get forks - I've decided not to concern myself with forks, but this is how you'd 
+# grab the information and load it into the `contributors` object
 # forksUrl = "#{rootUrl}forks?access_token=#{accessToken}"
 # forks = getData(forksUrl)
 
@@ -104,7 +105,7 @@ for name, branches of contributors
             allBranchNames.push(branchName)
         
         for commit in commits
-            # IMPORTANT! Excludes duplicate commits, like GitHub's Network Visualizer;
+            # IMPORTANT! EXCLUDES DUPLICATE COMMITS, like GitHub's Network Visualizer;
             # as a result, WE DISPLAY EACH COMMIT ONLY ONCE, prioritizing its appearance 
             # in master. This is a critical part of GitHub's visualization which shows 
             # disparate repositories, and also improves performance significantly.
@@ -155,7 +156,9 @@ margin =
     right:  10
 
 canvasWidth = 1200 - margin.left - margin.right
-canvasHeight = 1000 - margin.top - margin.bottom
+# Size canvas height so that name labels fit comfortably
+# canvasHeight = allBranchNames.length * 20 - margin.top - margin.bottom
+canvasHeight = allAuthors.length * 20 - margin.top - margin.bottom
 
 title = d3.select("body").append("div")
     .attr("id", "title")
@@ -167,9 +170,11 @@ svg = d3.select("body").append("svg")
     .append("g")
     .attr("transform", "translate(#{margin.left}, #{margin.top})")
 
-# I'm coloring and arranging rows by author. It's trivial to order and/or 
-# color by branch, but coloring and grouping commits by author is depicted in
-# the homework spec, and I think it makes for easier reading.
+# I'm coloring AND arranging rows by author. It's trivial to order and/or 
+# color by branch (I've left code to do that commented out), but coloring 
+# and grouping commits by author is depicted in the homework spec, and I 
+# also think it makes the visualization a little easier to decipher when 
+# applied to large repositories.
 colors = d3.scale.ordinal()
     .domain(allAuthors)
     .range(colorbrewer.Set3[12])

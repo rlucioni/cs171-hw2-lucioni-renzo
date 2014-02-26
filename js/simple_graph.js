@@ -162,7 +162,7 @@ margin = {
 
 canvasWidth = 1200 - margin.left - margin.right;
 
-canvasHeight = 1000 - margin.top - margin.bottom;
+canvasHeight = allAuthors.length * 20 - margin.top - margin.bottom;
 
 title = d3.select("body").append("div").attr("id", "title").text("The " + repoName + " network graph");
 
