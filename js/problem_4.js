@@ -265,11 +265,13 @@ labels = svg.selectAll("text").data(allAuthors).enter().append("text").attr("x",
 }).attr("visibility", "visible");
 
 links.on("mouseover", function(d, i) {
-  return d3.select(this).style("stroke", "red");
+  console.log(d.source.author);
+  links.style("stroke-opacity", "0.2");
+  return d3.select(this).style("stroke-width", "5px").style("stroke-opacity", "0.6");
 });
 
 links.on("mouseout", function(d, i) {
-  return d3.select(this).transition().duration(500).style("stroke", "gray");
+  return links.transition().duration(500).style("stroke", "gray").style("stroke-width", "1.5px").style("stroke-opacity", "0.4");
 });
 
 nodes.on("mouseover", function(d, i) {

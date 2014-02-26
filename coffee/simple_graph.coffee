@@ -303,15 +303,6 @@ labels = svg.selectAll("text")
     .text((d) -> d)
     .attr("visibility", "visible")
 
-links.on("mouseover", (d, i) -> 
-    d3.select(this).style("stroke", "red")
-)
-
-links.on("mouseout", (d, i) ->
-    d3.select(this).transition().duration(500)
-        .style("stroke", "gray")
-)
-
 nodes.on("mouseover", (d, i) ->
     d3.select(this).style("fill", "red")
     # Fade other branches

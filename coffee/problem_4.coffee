@@ -304,12 +304,20 @@ labels = svg.selectAll("text")
     .attr("visibility", "visible")
 
 links.on("mouseover", (d, i) -> 
-    d3.select(this).style("stroke", "red")
+    console.log(d.source.author)
+    links.style("stroke-opacity", "0.2")
+    d3.select(this)
+        .style("stroke-width", "5px")
+        .style("stroke-opacity", "0.6")
 )
 
 links.on("mouseout", (d, i) ->
-    d3.select(this).transition().duration(500)
+    # d3.select(this).transition().duration(500)
+    #     .style("stroke", "gray")
+    links.transition().duration(500)
         .style("stroke", "gray")
+        .style("stroke-width", "1.5px")
+        .style("stroke-opacity", "0.4")
 )
 
 nodes.on("mouseover", (d, i) ->

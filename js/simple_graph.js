@@ -264,14 +264,6 @@ labels = svg.selectAll("text").data(allAuthors).enter().append("text").attr("x",
   return d;
 }).attr("visibility", "visible");
 
-links.on("mouseover", function(d, i) {
-  return d3.select(this).style("stroke", "red");
-});
-
-links.on("mouseout", function(d, i) {
-  return d3.select(this).transition().duration(500).style("stroke", "gray");
-});
-
 nodes.on("mouseover", function(d, i) {
   d3.select(this).style("fill", "red");
   nodes.style("opacity", function(nodeData) {
