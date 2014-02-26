@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <meta charset="utf-8">
+    <title>Homework 2: Problem 4</title>
+    
+    <!-- My custom CSS -->
+    <link rel="stylesheet" type="text/css" href="css/problem_4.css">
+
+    <!-- Google Web Fonts (Lato) -->
+    <link rel='stylesheet' type='text/css' href='http://fonts.googleapis.com/css?family=Lato:300,400,700'>
+
+    <!-- D3 -->
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    
+    <!-- ColorBrewer Colors -->
+    <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
+
+</head>
+<body>
+
+    <div class="buttons">
+        <label><input type="radio" name="layout" value="linearLayout" checked>Linear Layout</label>
+        <label><input type="radio" name="layout" value="forceLayout">Force Layout</label>
+    </div>
+    <div class="buttons">
+        <label><input type="radio" name="scale" value="indexScale" checked>Index-based Scale</label>
+        <label><input type="radio" name="scale" value="timeScale">Time-based Scale</label>
+    </div>
+
+    <div id="tooltip" class="hidden">
+        <p><strong><span id="author">Author</span></strong></p>
+        <p><span id="date">Date</span></p>
+        <p><span id="message">Message</span></p>
+        <p><strong>Branch: </strong><span id="branch">Branch</span></p>
+        <p><strong>SHA: </strong><span id="sha">SHA</span></p>
+    </div>
+
+    <!-- 
+    NOTE: I'm using CoffeeScript (http://coffeescript.org/), a cleaner and       
+    less syntactically-dense version of JavaScript, to generate the JavaScript   
+    necessary to work with D3. I store my CoffeeScript in the `coffee` directory,
+    and keep the compiled, human-readable JavaScript in the `js` directory.      
+    Since it contains my comments and formatting, I strongly recommend looking   
+    at my CoffeeScript code. Besides, it's very similar to the JavaScript I would
+    otherwise write; if you know JavaScript, you know CoffeeScript. Thank you    
+    for understanding.
+    -->
+    <script src="js/problem_4.js"></script>
+
+</body>
+</html>
