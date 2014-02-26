@@ -1,4 +1,4 @@
-**NOTE: My work from Design Studio 1 can be found in [`design-studio-1-solutions.pdf`](design-studio-solutions.pdf). I've taken Problem 3 as an opportunity to refine my thinking from the design studio.**
+**NOTE: My work from Design Studio 1 can be found in [`design-studio-1-solutions.pdf`](https://github.com/rlucioni/cs171-hw2-lucioni-renzo/blob/master/design-studio-1-solutions.pdf). I've taken Problem 3 as an opportunity to refine my thinking from the design studio.**
 
 
 1. Referring to the Lee et al. reading, I think that an ideal GitHub Network Graph needs to address the following graph-related tasks, ranked in order of importance:
@@ -11,7 +11,7 @@
     In short, I think that an ideal GitHub Network Graph needs to prioritize Browsing and Overview tasks.
 
 
-2. I've tested my implementation of Problem 2 on the D3, jQuery, and Bootstrap repositories. Screenshots of the resulting visualizations can be found [here](img/screenshots), arranged both by author and by branch. As mentioned in my comments from [`simple_graph.coffee`](simple_graph.coffee), my implementation of Problem 2 both arranges and colors nodes by author, since this is what was depicted in the homework spec, and also helps when attempting to decipher the visualization after it has been applied to a large repository. However, I also experimented with arranging nodes by branch - the screenshots are evidence of that, as is some of the code I've left commented out in [`simple_graph.coffee`](simple_graph.coffee).
+2. I've tested my implementation of Problem 2 on the D3, jQuery, and Bootstrap repositories. Screenshots of the resulting visualizations can be found [here](img/screenshots), arranged both by author and by branch. As mentioned in my comments from [`simple_graph.coffee`](https://github.com/rlucioni/cs171-hw2-lucioni-renzo/blob/master/coffee/simple_graph.coffee), my implementation of Problem 2 both arranges and colors nodes by author, since this is what was depicted in the homework spec, and also helps when attempting to decipher the visualization after it has been applied to a large repository. However, I also experimented with arranging nodes by branch - the screenshots are evidence of that, as is some of the code I've left commented out in [`simple_graph.coffee`](https://github.com/rlucioni/cs171-hw2-lucioni-renzo/blob/master/coffee/simple_graph.coffee).
 
     Contributors to the D3, jQuery, and Bootstrap repositories seem to exhibit similar interaction patterns, specifically in terms of their commit behavior. In each repository, a handful of contributors seem to lead the project, pushing commits in a very regular fashion. A large group of minor, satellite contributors "orbit" around these lead contributors. The satellite contributors push small numbers of commits, often consisting of one-off fixes. These commits are then pulled into the main project by the lead contributors.
 
@@ -25,7 +25,7 @@
     Finally, displaying so many commits at once incurs a significant performance hit on D3 and the browser. The result is extremely laggy interaction and a generally unpleasant experience.
 
 
-**NOTE: My answer below, combined with my answer to #3, constitutes the requested "paragraph explaining the design decisions [I] made." I will not be attaching any separate paragraphs. As requested, I've included a sketch of the icicle design described below; the file is named [`problem_3_sketch.pdf`](problem_3_sketch.pdf).**
+**NOTE: My answer below, combined with my answer to #3, constitutes the requested "paragraph explaining the design decisions [I] made." I will not be attaching any separate paragraphs. As requested, I've included a sketch of the icicle design described below; the file is named [`problem_3_sketch.pdf`](https://github.com/rlucioni/cs171-hw2-lucioni-renzo/blob/master/problem_3_sketch.pdf).**
 
 4. I think the best approach to dealing with more complex commit data of the kind found in the D3, jQuery, and Bootstrap repositories begins by somehow simplifying the information. Grouping together (i.e., aggregating) unbroken chronological chains of commits by the same author into proportionally larger single nodes will go a long way towards simplifying the data and cutting down on the number of nodes displayed. This will improve the performance, usability, and above all usefulness of the visualization by allowing users to more quickly gain an overview of a repository's history.
     
