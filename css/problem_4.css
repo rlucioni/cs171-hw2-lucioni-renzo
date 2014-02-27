@@ -29,7 +29,7 @@ span#redLink {
 input[type="radio"] {
     margin: 0 10px 0 10px;
 }
-#tooltip {
+#nodeTooltip, #linkTooltip {
     position: absolute;
     width: 400px;
     height: auto;
@@ -39,10 +39,10 @@ input[type="radio"] {
     -moz-border-radius: 10px;
     border-radius: 10px;
 }
-#tooltip.hidden {
+#nodeTooltip.hidden, #linkTooltip.hidden {
     display: none;
 }
-#tooltip p {
+#nodeTooltip p, #linkTooltip p {
     margin: 0;
     line-height: 20px
 }

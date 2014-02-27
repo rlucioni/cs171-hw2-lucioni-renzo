@@ -195,7 +195,7 @@ margin =
     right:  10
 
 canvasWidth = 1200 - margin.left - margin.right
-# Size canvas height so that name labels fit comfortably
+# Size canvas height so that name everything fits comfortably
 # canvasHeight = allBranchNames.length * 20 - margin.top - margin.bottom
 canvasHeight = allAuthors.length * 20 - margin.top - margin.bottom
 
@@ -231,11 +231,11 @@ yScale = d3.scale.ordinal()
 
 indexScale = d3.scale.linear()
     .domain([0, graph.nodes.length])
-    .rangeRound([150, canvasWidth])
+    .rangeRound([0, canvasWidth])
 
 timeScale = d3.time.scale()
     .domain([d3.min(allTimestamps), d3.max(allTimestamps)])
-    .rangeRound([150, canvasWidth])
+    .rangeRound([0, canvasWidth])
 
 tick = (d) ->
     graphUpdate(0)
@@ -300,15 +300,6 @@ nodes = svg.selectAll(".node")
     .attr("width", barWidth)
     .style("fill", (d) -> colors(d.author))
 
-labels = svg.selectAll("text")
-    # .data(allBranchNames)
-    .data(allAuthors)
-    .enter().append("text")
-    .attr("x", 0)
-    .attr("y", (d) -> yScale(d))
-    .text((d) -> d)
-    .attr("visibility", "visible")
-
 nodes.on("mouseover", (d, i) ->
     d3.select(this).style("fill", "red")
     # Fade nodes belonging to other branches
@@ -327,7 +318,7 @@ nodes.on("mouseover", (d, i) ->
             return "red"
     )
 
-    d3.select("#tooltip")
+    d3.select("#nodeTooltip")
         # Position tooltip southeast of pointer
         .style("left", "#{d3.event.pageX + tooltipOffset}px")
         .style("top", "#{d3.event.pageY + tooltipOffset}px")
@@ -360,28 +351,39 @@ nodes.on("mouseover", (d, i) ->
             else
                 return ""
         )
-    d3.select("#tooltip").classed("hidden", false)
+    d3.select("#nodeTooltip").classed("hidden", false)
 )
 
 nodes.on("mouseout", (d, i) ->
     # Restore appropriate color
     d3.select(this).style("fill", () -> colors(d.author))
     nodes.transition().duration(250).style("opacity", "1")
-    d3.select("#tooltip").classed("hidden", true)
+    d3.select("#nodeTooltip").classed("hidden", true)
     links.transition().duration(250)
         .style("stroke", "gray")
         .style("stroke-width", "1.5px")
         .style("stroke-opacity", "0.4")
 )
 
-links.on("mouseover", (d, i) -> 
+links.on("mouseover", (d, i) ->
     links.style("stroke-opacity", "0.2")
     d3.select(this)
         .style("stroke-width", "#{barWidth}px")
         .style("stroke-opacity", "0.6")
+
+    d3.select("#linkTooltip")
+        # Position tooltip southeast of pointer
+        .style("left", "#{d3.event.pageX + tooltipOffset}px")
+        .style("top", "#{d3.event.pageY + tooltipOffset}px")
+    d3.select("#source")
+        .text(d.source.author)
+    d3.select("#target")
+        .text(d.target.author)
+    d3.select("#linkTooltip").classed("hidden", false)
 )
 
 links.on("mouseout", (d, i) ->
+    d3.select("#linkTooltip").classed("hidden", true)
     links.transition().duration(250)
         .style("stroke", "gray")
         .style("stroke-width", "1.5px")
