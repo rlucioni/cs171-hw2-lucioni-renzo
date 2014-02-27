@@ -1,21 +1,33 @@
 body {
     font-family: 'Lato', sans-serif;
 }
-.buttons {
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-    padding-top: 20px;
-}
-input[type="radio"] {
-    margin: 0 10px 0 10px;
-}
 #title {
     margin-left: auto;
     margin-right: auto;
     text-align: center;
-    padding: 20px;
+    padding-top: 20px;
+    padding-bottom: 10px;
     font-size: 1.7em;
+}
+#instructions {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+span#greenLink {
+    color: green;
+}
+span#redLink {
+    color: red;
+}
+.buttons {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    padding: 10px;
+}
+input[type="radio"] {
+    margin: 0 10px 0 10px;
 }
 #tooltip {
     position: absolute;

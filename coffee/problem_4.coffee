@@ -199,7 +199,11 @@ canvasWidth = 1200 - margin.left - margin.right
 # canvasHeight = allBranchNames.length * 20 - margin.top - margin.bottom
 canvasHeight = allAuthors.length * 20 - margin.top - margin.bottom
 
-title = d3.select("body").append("div")
+# I've decided to use bars as nodes - this defines their width
+barWidth = 10
+
+# Insert title at the top of body
+title = d3.select("body").insert("div", "div")
     .attr("id", "title")
     .text("The improved #{repoName} network graph")
     
@@ -221,7 +225,7 @@ colors = d3.scale.ordinal()
 yScale = d3.scale.ordinal()
     # .domain(allBranchNames)
     .domain(allAuthors)
-    .rangeRoundBands([0, canvasHeight], 0.5)
+    .rangeRoundBands([0, canvasHeight - 75], 0.5)
 
 indexScale = d3.scale.linear()
     .domain([0, graph.nodes.length])
@@ -234,20 +238,9 @@ timeScale = d3.time.scale()
 tick = (d) ->
     graphUpdate(0)
 
-forceLayout = () ->
-    # Disable scale radio buttons
-    d3.selectAll("input[name='scale']").attr("disabled", true)
-    # Hide labels
-    labels.attr("visibility", "hidden")
-    force.start()
-
 scale = "index"
 linearLayout = () ->
     force.stop()
-    # Enable scale radio buttons
-    d3.selectAll("input[name='scale']").attr("disabled", null)
-    # Show labels
-    labels.attr("visibility", "visible")
     graph.nodes.forEach((d, i) -> 
         # d.y = yScale(d.branch)
         d.y = yScale(d.author)
@@ -263,34 +256,22 @@ line = d3.svg.line()
     .y((d) -> d.y)
 
 graphUpdate = (delay) ->
-    # Makes SVG element borders into "walls" so nodes can't escape
-    nodes.transition().duration(delay)
-        .attr("cx", (d) -> d.x = Math.max(5, Math.min(canvasWidth - 5, d.x)))
-        .attr("cy", (d) -> d.y = Math.max(5, Math.min(canvasHeight - 5, d.y)))
-
     links.transition().duration(delay)
         .attr("d", (d) -> line([
-            {x: d.source.x, y: d.source.y},
-            {x: d.source.x, y: d.target.y},
-            {x: d.target.x, y: d.target.y}
+            {x: d.source.x + barWidth/2, y: d.source.y + barWidth/2},
+            {x: d.source.x + barWidth/2, y: d.target.y + barWidth/2},
+            {x: d.target.x, y: d.target.y + barWidth/2}
         ]))
 
     nodes.transition().duration(delay)
         .attr("transform", (d) -> "translate(#{d.x}, #{d.y})")
 
-# Generate force layout
+# Use force layout to populate x/y coordinates
 force = d3.layout.force()
-    .size([canvasWidth, canvasHeight])
-    .charge(-30)
-    .linkDistance(10)
-    .on("tick", tick)
-    .on("start", (d) -> )
-    .on("end", (d) -> )
     .nodes(graph.nodes)
     .links(graph.links)
-
-d3.select("input[value='forceLayout']").on("click", forceLayout)
-d3.select("input[value='linearLayout']").on("click", linearLayout)
+    .start()
+    .stop()
 
 d3.select("input[value='indexScale']").on("click", () ->
     scale = "index"
@@ -301,38 +282,21 @@ d3.select("input[value='timeScale']").on("click", () ->
     linearLayout()
 )
 
-# Define arrow markers
-svg.append("svg:defs").selectAll("marker")
-    .data(["end"])
-    .enter().append("svg:marker")
-    .attr("fill", "gray")
-    .attr("id", String)
-    .attr("viewBox", "0 -5 10 10")
-    .attr("refX", 15)
-    .attr("refY", -1.5)
-    .attr("markerWidth", 4)
-    .attr("markerHeight", 4)
-    .attr("orient", "auto")
-    .append("svg:path")
-    .attr("class", "arrowhead")
-    .attr("d", "M0,-5L10,0L0,5")
-
 # Use paths to draw links
 links = svg.append("svg:g").selectAll("path")
     .data(force.links())
     .enter().append("svg:path")
     .attr("class", "link")
-    .attr("marker-end", "url(#end)");
 
 nodes = svg.selectAll(".node")
     .data(force.nodes())
     .enter().append("g")
     .attr("class", "node")
-    .append("circle")
-    # Encode aggregated commit count as area 
-    .attr("r", (d) -> 3*Math.sqrt(d.aggregatedCount))
+    .append("rect")
+    # Encode aggregated commit count as bar height
+    .attr("height", (d) -> 10*d.aggregatedCount)
+    .attr("width", barWidth)
     .style("fill", (d) -> colors(d.author))
-    # .call(force.drag)
 
 labels = svg.selectAll("text")
     # .data(allBranchNames)
@@ -343,29 +307,22 @@ labels = svg.selectAll("text")
     .text((d) -> d)
     .attr("visibility", "visible")
 
-links.on("mouseover", (d, i) -> 
-    console.log(d.source.author)
-    links.style("stroke-opacity", "0.2")
-    d3.select(this)
-        .style("stroke-width", "5px")
-        .style("stroke-opacity", "0.6")
-)
-
-links.on("mouseout", (d, i) ->
-    # d3.select(this).transition().duration(500)
-    #     .style("stroke", "gray")
-    links.transition().duration(500)
-        .style("stroke", "gray")
-        .style("stroke-width", "1.5px")
-        .style("stroke-opacity", "0.4")
-)
-
 nodes.on("mouseover", (d, i) ->
     d3.select(this).style("fill", "red")
-    # Fade other branches
+    # Fade nodes belonging to other branches
     nodes.style("opacity", (nodeData) ->
         if nodeData.branch != d.branch
             return 0.4
+    )
+    links.style("stroke-width", (bound) ->
+        if d == bound.source or d == bound.target
+            return "#{barWidth}px"
+    )
+    .style("stroke", (bound) ->
+        if d == bound.target
+            return "green"
+        else if d == bound.source
+            return "red"
     )
 
     d3.select("#tooltip")
@@ -391,11 +348,28 @@ nodes.on("mouseover", (d, i) ->
 nodes.on("mouseout", (d, i) ->
     # Restore appropriate color
     d3.select(this).style("fill", () -> colors(d.author))
-    nodes.transition().duration(500).style("opacity", "1")
+    nodes.transition().duration(250).style("opacity", "1")
     d3.select("#tooltip").classed("hidden", true)
+    links.transition().duration(250)
+        .style("stroke", "gray")
+        .style("stroke-width", "1.5px")
+        .style("stroke-opacity", "0.4")
 )
 
-# Attach nodes and links
-forceLayout()
+links.on("mouseover", (d, i) -> 
+    console.log(d)
+    links.style("stroke-opacity", "0.2")
+    d3.select(this)
+        .style("stroke-width", "#{barWidth}px")
+        .style("stroke-opacity", "0.6")
+)
+
+links.on("mouseout", (d, i) ->
+    links.transition().duration(250)
+        .style("stroke", "gray")
+        .style("stroke-width", "1.5px")
+        .style("stroke-opacity", "0.4")
+)
+
 # Default to index-based linear layout ("branched")
 linearLayout()
