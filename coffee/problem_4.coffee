@@ -126,26 +126,65 @@ for name, branches of contributors
                 branch: branchName
                 sha: commit.sha
                 htmlUrl: commit.html_url
-                parentShas: (metadata.sha for parent, metadata of commit.parents)
+                parentShas: (info.sha for parent, info of commit.parents)
 
             if metadata.date not in allTimestamps
                 allTimestamps.push(metadata.date)
 
             if metadata.author not in allAuthors
                 allAuthors.push(metadata.author)
-            
+
             graph.nodes.push(metadata)
 
 # Sort commits by date
 graph.nodes.sort((a, b) -> a.date.getTime() - b.date.getTime())
 
+# Aggregate consecutive nodes by the same author on the same branch, retaining metadata
+aggregatedNodes = []
+ix = 0
+for node in graph.nodes
+    if aggregatedNodes.length == 0
+        newNode = 
+            author: node.author
+            branch: node.branch
+            dates: [node.date]
+            messages: [node.message]
+            shas: [node.sha]
+            parentShas: node.parentShas
+            aggregatedCount: 1
+        aggregatedNodes.push(newNode)
+        continue
+
+    aggregatedNode = aggregatedNodes[ix]
+    if node.author == aggregatedNode.author and node.branch == aggregatedNode.branch
+        aggregatedNode.dates.push(node.date)
+        aggregatedNode.messages.push(node.message)
+        aggregatedNode.shas.push(node.sha)
+        aggregatedNode.parentShas = aggregatedNode.parentShas.concat(node.parentShas)
+        aggregatedNode.aggregatedCount += 1
+    else
+        newNode = 
+            author: node.author
+            branch: node.branch
+            dates: [node.date]
+            messages: [node.message]
+            shas: [node.sha]
+            parentShas: node.parentShas
+            aggregatedCount: 1
+        aggregatedNodes.push(newNode)
+        ix += 1
+
+graph.nodes = aggregatedNodes
+
 # Process nodes to populate link array
 for i in d3.range(graph.nodes.length)
     focusNode = graph.nodes[i]
-    for sha in focusNode.parentShas
+    for parentSha in focusNode.parentShas
         for j in d3.range(graph.nodes.length)
+            if i == j
+                continue
             candidateNode = graph.nodes[j]
-            if sha == candidateNode.sha and focusNode.sha != candidateNode.sha
+            if parentSha in candidateNode.shas
                 graph.links.push({source: j, target: i})
 
 # Mike Bostock's margin convention
@@ -162,7 +201,7 @@ canvasHeight = allAuthors.length * 20 - margin.top - margin.bottom
 
 title = d3.select("body").append("div")
     .attr("id", "title")
-    .text("The #{repoName} network graph")
+    .text("The improved #{repoName} network graph")
     
 svg = d3.select("body").append("svg")
     .attr("width", canvasWidth + margin.left + margin.right)
@@ -213,7 +252,7 @@ linearLayout = () ->
         # d.y = yScale(d.branch)
         d.y = yScale(d.author)
         if scale == "time"
-            d.x = timeScale(d.date)
+            d.x = timeScale(d.dates[0])
         else
             d.x = indexScale(i)
     )
@@ -232,7 +271,7 @@ graphUpdate = (delay) ->
     links.transition().duration(delay)
         .attr("d", (d) -> line([
             {x: d.source.x, y: d.source.y},
-            {x: d.source.x, y: d.target.y}, 
+            {x: d.source.x, y: d.target.y},
             {x: d.target.x, y: d.target.y}
         ]))
 
@@ -290,7 +329,8 @@ nodes = svg.selectAll(".node")
     .enter().append("g")
     .attr("class", "node")
     .append("circle")
-    .attr("r", 5)
+    # Encode aggregated commit count as area 
+    .attr("r", (d) -> 3*Math.sqrt(d.aggregatedCount))
     .style("fill", (d) -> colors(d.author))
     # .call(force.drag)
 
@@ -334,14 +374,17 @@ nodes.on("mouseover", (d, i) ->
         .style("top", "#{d3.event.pageY + 5}px")
     d3.select("#author")
         .text(d.author)
-    d3.select("#date")
-        .text(d.date.toString())
-    d3.select("#message")
-        .text(d.message)
     d3.select("#branch")
         .text(d.branch)
+    # BETTER COPY: only print once if array contains one element
+    d3.select("#date")
+        .text("#{d.dates[0].toString()} to #{d.dates[d.dates.length - 1].toString()}")
+    d3.select("#message")
+        .text("#{d.messages[0]} to #{d.messages[d.messages.length - 1]}")
     d3.select("#sha")
-        .text(d.sha)
+        .text("#{d.shas[0]} to #{d.shas[d.shas.length - 1]}")
+    d3.select("#parents")
+        .text(d.parentShas)
     d3.select("#tooltip").classed("hidden", false)
 )
 

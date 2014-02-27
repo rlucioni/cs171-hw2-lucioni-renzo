@@ -142,10 +142,12 @@ graph.nodes.sort((a, b) -> a.date.getTime() - b.date.getTime())
 # Process nodes to populate link array
 for i in d3.range(graph.nodes.length)
     focusNode = graph.nodes[i]
-    for sha in focusNode.parentShas
+    for parentSha in focusNode.parentShas
         for j in d3.range(graph.nodes.length)
+            if i == j
+                continue
             candidateNode = graph.nodes[j]
-            if sha == candidateNode.sha and focusNode.sha != candidateNode.sha
+            if parentSha == candidateNode.sha
                 graph.links.push({source: j, target: i})
 
 # Mike Bostock's margin convention
