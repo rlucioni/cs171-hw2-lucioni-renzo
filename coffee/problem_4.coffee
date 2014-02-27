@@ -260,6 +260,7 @@ line = d3.svg.line()
 graphUpdate = (delay) ->
     links.transition().duration(delay)
         .attr("d", (d) -> line([
+            # Adjust alignment of links so they look nice with rectangular nodes
             {x: d.source.x + barWidth/2, y: d.source.y + barWidth/2},
             {x: d.source.x + barWidth/2, y: d.target.y + barWidth/2},
             {x: d.target.x, y: d.target.y + barWidth/2}

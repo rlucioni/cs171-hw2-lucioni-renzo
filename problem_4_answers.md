@@ -1,1 +1,7 @@
-Make sure you mouse over links which appear to go backwards! The relationships they represent do make sense, and often occur across branches.
+### Technical Choices ###
+
+I was been able to reproduce everything I set out in my sketch. The most significant technical hurdle I faced was aggregating the nodes while preserving link relationships between them. I was able to achieve the aggregated node effect by pooling SHAs and parent SHAs within the aggregated nodes, and then referring to those pools when attempting to match parents with their children.
+
+As you can see, I've chosen to use rectangular nodes instead of the more traditional circular nodes. I adjusted the alignment of the links accordingly, so that they looked good connecting rectangular nodes. Interaction plays a heavy role in my reimagined network graph. The length of each rectangular node corresponds to the number of commits aggregated within it. Hovering over a node will reveal a tooltip located just southwest of the mouse pointer which displays the author of these commits, the number of commits aggregated within the node, and the date range in which they were authored. Hovering over a node will also highlight links entering the node in green and links leaving the node in red; you can also hover over an individual link to highlight it. I did this instead of using the ugly SVG arrows we were asked to use in Problem 2. 
+
+Please refer to my comments in [problem_4.coffee](https://github.com/rlucioni/cs171-hw2-lucioni-renzo/blob/master/coffee/problem_4.coffee) for further technical details of my implementation.
