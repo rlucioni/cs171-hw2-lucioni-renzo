@@ -121,7 +121,7 @@ for name, branches of contributors
 
             metadata =
                 author: commit.commit.author.name
-                date: new Date(commit.commit.author.date)
+                date: new Date(commit.commit.committer.date)
                 message: commit.commit.message
                 branch: branchName
                 sha: commit.sha
@@ -159,7 +159,7 @@ margin =
 
 canvasWidth = 1200 - margin.left - margin.right
 # Size canvas height so that name labels fit comfortably
-# canvasHeight = allBranchNames.length * 20 - margin.top - margin.bottom
+# canvasHeight = allBranchNames.length * 70 - margin.top - margin.bottom
 canvasHeight = allAuthors.length * 20 - margin.top - margin.bottom
 
 title = d3.select("body").append("div")

@@ -121,7 +121,7 @@ for name, branches of contributors
 
             metadata =
                 author: commit.commit.author.name
-                date: new Date(commit.commit.author.date)
+                date: new Date(commit.commit.committer.date)
                 message: commit.commit.message
                 branch: branchName
                 sha: commit.sha
