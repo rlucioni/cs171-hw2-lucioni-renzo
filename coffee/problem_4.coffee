@@ -37,7 +37,7 @@ getData = (url) ->
 
     return data
 
-# Scope-less public access token for Basic Authentication
+# Scope-less public access token for Basic Authentication (5000 requests/hr)
 accessToken = "5e04d069456442ee6b66b2b87d2a28f215789511"
 
 # Mid-size repo; django-waffle is a Django feature flipper whose graph loads quickly
@@ -46,8 +46,8 @@ rootUrl = "https://api.github.com/repos/jsocol/django-waffle/"
 rootUser = "jsocol"
 
 # Large repos; fetching data and generating the graphs takes a while for these
-# NOTE: I've included images of these graphs in img/screenshots, although you can 
-#       create them yourself by uncommenting the appropriate information and reloading
+# NOTE: You can create graphs for these repos by uncommenting the appropriate 
+#       information, recompiling the CoffeeScript, and reloading
 # repoName = "d3"
 # rootUrl = "https://api.github.com/repos/mbostock/d3/"
 # rootUser = "mbostock"
@@ -73,7 +73,7 @@ contributors[rootUser]["master"] = getData(commitsUrl)
 
 for branch in branches
     # We've already pulled commits from master, so we'll ignore it
-    if branch.name == "master"
+    if branch.name is "master"
         continue
     commitsUrl = "#{rootUrl}commits?sha=#{branch.name}&per_page=100&access_token=#{accessToken}"
     contributors[rootUser][branch.name] = getData(commitsUrl)
@@ -113,7 +113,7 @@ for name, branches of contributors
             # they are no longer displayed on their own branch.
             duplicate = false
             for storedCommit in graph.nodes
-                if commit.sha == storedCommit.sha
+                if commit.sha is storedCommit.sha
                     duplicate = true
                     break
             if duplicate
@@ -143,7 +143,7 @@ graph.nodes.sort((a, b) -> a.date.getTime() - b.date.getTime())
 aggregatedNodes = []
 ix = 0
 for node in graph.nodes
-    if aggregatedNodes.length == 0
+    if aggregatedNodes.length is 0
         newNode = 
             author: node.author
             branch: node.branch
@@ -156,7 +156,7 @@ for node in graph.nodes
         continue
 
     aggregatedNode = aggregatedNodes[ix]
-    if node.author == aggregatedNode.author and node.branch == aggregatedNode.branch
+    if node.author is aggregatedNode.author and node.branch is aggregatedNode.branch
         aggregatedNode.dates.push(node.date)
         aggregatedNode.messages.push(node.message)
         aggregatedNode.shas.push(node.sha)
@@ -181,7 +181,7 @@ for i in d3.range(graph.nodes.length)
     focusNode = graph.nodes[i]
     for parentSha in focusNode.parentShas
         for j in d3.range(graph.nodes.length)
-            if i == j
+            if i is j
                 continue
             candidateNode = graph.nodes[j]
             if parentSha in candidateNode.shas
@@ -246,7 +246,7 @@ linearLayout = () ->
     graph.nodes.forEach((d, i) -> 
         # d.y = yScale(d.branch)
         d.y = yScale(d.author)
-        if scale == "time"
+        if scale is "time"
             d.x = timeScale(d.dates[0])
         else
             d.x = indexScale(i)
@@ -309,13 +309,13 @@ nodes.on("mouseover", (d, i) ->
             return 0.4
     )
     links.style("stroke-width", (bound) ->
-        if d == bound.source or d == bound.target
+        if d is bound.source or d is bound.target
             return "#{barWidth}px"
     )
     .style("stroke", (bound) ->
-        if d == bound.target
+        if d is bound.target
             return "green"
-        else if d == bound.source
+        else if d is bound.source
             return "red"
     )
 
@@ -347,6 +347,7 @@ nodes.on("mouseover", (d, i) ->
         )
     d3.select("#message")
         .text(() ->
+            # Only show a commit message if node contains 1 commit
             if d.messages.length is 1
                 return "#{d.messages[0]}"
             else
