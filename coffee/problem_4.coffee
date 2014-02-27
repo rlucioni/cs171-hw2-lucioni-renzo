@@ -201,6 +201,8 @@ canvasHeight = allAuthors.length * 20 - margin.top - margin.bottom
 
 # I've decided to use bars as nodes - this defines their width
 barWidth = 10
+# Used when displaying the tooltip relative to the mouse pointer
+tooltipOffset = 5
 
 # Insert title at the top of body
 title = d3.select("body").insert("div", "div")
@@ -294,7 +296,7 @@ nodes = svg.selectAll(".node")
     .attr("class", "node")
     .append("rect")
     # Encode aggregated commit count as bar height
-    .attr("height", (d) -> 10*d.aggregatedCount)
+    .attr("height", (d) -> barWidth*d.aggregatedCount)
     .attr("width", barWidth)
     .style("fill", (d) -> colors(d.author))
 
@@ -327,21 +329,37 @@ nodes.on("mouseover", (d, i) ->
 
     d3.select("#tooltip")
         # Position tooltip southeast of pointer
-        .style("left", "#{d3.event.pageX + 5}px")
-        .style("top", "#{d3.event.pageY + 5}px")
+        .style("left", "#{d3.event.pageX + tooltipOffset}px")
+        .style("top", "#{d3.event.pageY + tooltipOffset}px")
     d3.select("#author")
         .text(d.author)
     d3.select("#branch")
         .text(d.branch)
-    # BETTER COPY: only print once if array contains one element
     d3.select("#date")
-        .text("#{d.dates[0].toString()} to #{d.dates[d.dates.length - 1].toString()}")
+        .text(() -> 
+            length = d.dates.length
+            if length is 1
+                return "1 commit pushed on 
+                    #{d.dates[0].getMonth() + 1}/#{d.dates[0].getDate()}/#{d.dates[0].getFullYear()} 
+                    at 
+                    #{d.dates[0].getHours()}:#{d.dates[0].getMinutes()}.#{d.dates[0].getSeconds()}"
+            else
+                return "#{length} commits pushed between 
+                    #{d.dates[0].getMonth() + 1}/#{d.dates[0].getDate()}/#{d.dates[0].getFullYear()} 
+                    at 
+                    #{d.dates[0].getHours()}:#{d.dates[0].getMinutes()}.#{d.dates[0].getSeconds()} 
+                    and 
+                    #{d.dates[length - 1].getMonth() + 1}/#{d.dates[length - 1].getDate()}/#{d.dates[length - 1].getFullYear()} 
+                    at 
+                    #{d.dates[length - 1].getHours()}:#{d.dates[length - 1].getMinutes()}.#{d.dates[length - 1].getSeconds()}"
+        )
     d3.select("#message")
-        .text("#{d.messages[0]} to #{d.messages[d.messages.length - 1]}")
-    d3.select("#sha")
-        .text("#{d.shas[0]} to #{d.shas[d.shas.length - 1]}")
-    d3.select("#parents")
-        .text(d.parentShas)
+        .text(() ->
+            if d.messages.length is 1
+                return "#{d.messages[0]}"
+            else
+                return ""
+        )
     d3.select("#tooltip").classed("hidden", false)
 )
 
@@ -357,7 +375,6 @@ nodes.on("mouseout", (d, i) ->
 )
 
 links.on("mouseover", (d, i) -> 
-    console.log(d)
     links.style("stroke-opacity", "0.2")
     d3.select(this)
         .style("stroke-width", "#{barWidth}px")
@@ -371,5 +388,5 @@ links.on("mouseout", (d, i) ->
         .style("stroke-opacity", "0.4")
 )
 
-# Default to index-based linear layout ("branched")
+# Default to index-based linear layout
 linearLayout()
