@@ -177,9 +177,22 @@ svg = d3.select("body").append("svg")
 # and grouping commits by author is depicted in the homework spec, and I 
 # also think it makes the visualization a little easier to decipher when 
 # applied to large repositories.
-colors = d3.scale.ordinal()
-    .domain(allAuthors)
-    .range(colorbrewer.Set3[12])
+
+stringToHex = (str) ->
+    # convert to hexatridecimal
+    hexatridecimal = parseInt(str, 36)
+    # exponentiate and trim off beginning and end
+    trimmed = hexatridecimal.toExponential().slice(2, -5)
+    # convert to decimal
+    decimal = parseInt(trimmed, 10)
+    # truncate to range between 0 and 16777215 (0xFFFFFF)
+    truncated = decimal & 0xFFFFFF
+    # write the number in hexadecimal and convert to uppercase
+    hexadecimal = truncated.toString(16).toUpperCase()
+    # guarantee that final number is 6 digits, and append hash symbol
+    code = "##{('000000' + hexadecimal).slice(-6)}"
+
+    return code
 
 yScale = d3.scale.ordinal()
     # .domain(allBranchNames)
@@ -293,7 +306,7 @@ nodes = svg.selectAll(".node")
     .attr("class", "node")
     .append("circle")
     .attr("r", 5)
-    .style("fill", (d) -> colors(d.author))
+    .style("fill", (d) -> stringToHex(d.author))
     # .call(force.drag)
 
 labels = svg.selectAll("text")
@@ -332,7 +345,7 @@ nodes.on("mouseover", (d, i) ->
 
 nodes.on("mouseout", (d, i) ->
     # Restore appropriate color
-    d3.select(this).style("fill", () -> colors(d.author))
+    d3.select(this).style("fill", () -> stringToHex(d.author))
     nodes.transition().duration(500).style("opacity", "1")
     d3.select("#tooltip").classed("hidden", true)
 )
